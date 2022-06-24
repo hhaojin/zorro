@@ -12,91 +12,72 @@ use FastRoute\DataGenerator\GroupCountBased;
 use FastRoute\Dispatcher\GroupCountBased as Dispatcher;
 use FastRoute\RouteCollector;
 use FastRoute\RouteParser\Std;
-use phpDocumentor\Reflection\Types\This;
+use Swoole\Http\Request;
+use Swoole\Http\Response;
+use Swoole\Http\Server;
 
-class Zorro
+class Zorro extends RouteGroup
 {
-    /** @var RouteCollector */
-    protected $collector;
-
-    /** @var array */
-    protected $groups = [];
-
     /** @var Dispatcher */
     protected $dispatcher;
 
-    public function __construct()
+    public function Run(int $port = 80, string $host = "0.0.0.0"): void
     {
-        $this->collector = new RouteCollector(new Std(), new GroupCountBased());
+        $this->initDispatcher();
+        $server = new Server($host, $port);
+        $server->on("request", [$this, "serveHttp"]);
+        $server->start();
     }
 
-    public function Group(string $group): RouteGroup
+    public function serveHttp(Request $request, Response $response): void
     {
-        $routeGroup = new RouteGroup($group);
-        $this->groups[$group] = $routeGroup;
-        return $routeGroup;
+        $context = new Context($request, $response);
+        $this->handleRequest($context);
     }
 
-    public function Get(string $path, \Closure $handle): void
+    protected function initDispatcher(): void
     {
-        $this->collector->addRoute("GET", $path, $handle);
-    }
-
-    public function Post(string $path, \Closure $handle): void
-    {
-        $this->collector->addRoute("POST", $path, $handle);
-    }
-
-    public function Put(string $path, \Closure $handle): void
-    {
-        $this->collector->addRoute("PUT", $path, $handle);
-    }
-
-    public function Delete(string $path, \Closure $handle): void
-    {
-        $this->collector->addRoute("DELETE", $path, $handle);
-    }
-
-    public function Patch(string $path, \Closure $handle): void
-    {
-        $this->collector->addRoute("PATCH", $path, $handle);
-    }
-
-    public function Head(string $path, \Closure $handle): void
-    {
-        $this->collector->addRoute("HEAD", $path, $handle);
-    }
-
-    public function Run(): void
-    {
-        //run server
-    }
-
-    protected function initDispatcher()
-    {
-        $this->collectRouteGroup($this->collector, $this->groups);
-        $this->dispatcher = new Dispatcher($this->collector->getData());
-        $this->collector = null;
-        $this->groups = null;
+        $collector = new RouteCollector(new Std(), new GroupCountBased());
+        $this->collectRouteGroup($collector, ["" => $this]);
+        $this->dispatcher = new Dispatcher($collector->getData());
     }
 
     protected function collectRouteGroup(RouteCollector $collector, array $groups): void
     {
-        /** @var RouteGroup $routeGroup */
-        foreach ($groups as $group => $routeGroup) {
-            $collector->addGroup($group, function (RouteCollector $r) use ($routeGroup) {
+        foreach ($groups as $groupName => $routeGroup) {
+            $collector->addGroup($groupName, function (RouteCollector $r) use ($collector, $routeGroup) {
                 foreach ($routeGroup->getRoutes() as $method => $routes) {
                     foreach ($routes as $path => $handle) {
                         $r->addRoute($method, $path, $handle);
                     }
                 }
-                $this->collectRouteGroup($r, $routeGroup->getGroups());
+                $this->collectRouteGroup($collector, $routeGroup->getGroups());
             });
         }
     }
 
-    protected function dispatch($method, $uri): array
+    public function dispatch(string $method, string $uri): array
     {
         return $this->dispatcher->dispatch($method, $uri);
+    }
+
+    protected function handleRequest(Context $ctx): void
+    {
+        $routeInfo = $this->dispatch($ctx->request->server["request_method"], $ctx->request->server["request_uri"]);
+        switch ($routeInfo[0]) {
+            case Dispatcher::FOUND:
+                $ctx->setHandles([$routeInfo[1]]);
+                $ctx->setParams($routeInfo[2]);
+                $ctx->next();
+                break;
+            case Dispatcher::NOT_FOUND:
+                $ctx->response->status(404);
+                $ctx->response->end();
+                break;
+            case Dispatcher::METHOD_NOT_ALLOWED:
+                $ctx->response->status(405);
+                $ctx->response->end();
+                break;
+        }
     }
 }

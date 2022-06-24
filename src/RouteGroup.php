@@ -14,14 +14,9 @@ class RouteGroup
 {
     protected $groupName;
 
-    protected $routes;
+    protected $routes = [];
 
-    protected $groups = [];
-
-    public function __construct($groupName)
-    {
-        $this->groupName = $groupName;
-    }
+    protected $routeGroups = [];
 
     public function Get(string $path, \Closure $handle): void
     {
@@ -55,8 +50,9 @@ class RouteGroup
 
     public function Group(string $group): RouteGroup
     {
-        $routeGroup = new RouteGroup($group);
-        $this->groups[$group] = $routeGroup;
+        $routeGroup = new RouteGroup();
+        $this->groupName = $group;
+        $this->routeGroups[$group] = $routeGroup;
         return $routeGroup;
     }
 
@@ -67,6 +63,6 @@ class RouteGroup
 
     public function getGroups(): array
     {
-        return $this->groups;
+        return $this->routeGroups;
     }
 }

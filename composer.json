@@ -1,8 +1,8 @@
 {
-    "name": "haojin/zorro",
+    "name": "hhaojin/zorro",
     "authors": [
         {
-            "name": "haojin",
+            "name": "hhaojin",
             "email": "972358385@qq.com"
         }
     ],
@@ -12,7 +12,8 @@
         }
     },
     "require-dev": {
-        "phpunit/phpunit": "^8"
+        "phpunit/phpunit": "^8",
+        "eaglewu/swoole-ide-helper": "dev-master"
     },
     "require": {
         "nikic/fast-route": "^1.3"
