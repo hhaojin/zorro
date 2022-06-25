@@ -19,25 +19,35 @@ class ZorroTest extends TestCase
     {
         $zorror = new \Zorro\Zorro();
         $zorror->Get("/test", function (Context $ctx) {
-            return "test";
+            $ctx->setResponseBody("test");
         });
 
-        $v1Group = $zorror->Group("/v1");
+        $mdw = new class implements HandleInterface {
+            public function handle(Context $context)
+            {
+                $context->next();
+                $res = $context->getResponseBody();
+                $context->setResponseBody($res . "xx");
+            }
+        };
+
+        $v1Group = $zorror->Group("/v1", $mdw);
+        $v1Group->Use($mdw);
         {
             $v1Group->Get("/test", function (Context $ctx) {
-                return "v1/test";
+                $ctx->setResponseBody("v1/test");
             });
             $v1test = $v1Group->Group("/test");
             {
                 $v1test->Get("/xxx", function (Context $ctx) {
-                    return "v1/test/xxx";
+                    $ctx->setResponseBody("v1/test/xxx");
                 });
             }
         }
         $v2Group = $zorror->Group("/v2");
         {
             $v2Group->Post("/fff", function (Context $ctx) {
-                return "v2/fff";
+                $ctx->setResponseBody("v2/fff");
             });
         }
         $rf = new \ReflectionClass($zorror);
@@ -47,22 +57,35 @@ class ZorroTest extends TestCase
 
         $m = $rf->getMethod("dispatch");
         $m->setAccessible(true);
+
+
+        $ctx = new Context(null, null);
         $routeInfo = $m->invoke($zorror, "GET", "/test");
         $this->assertEquals(Dispatcher::FOUND, $routeInfo[0]);
+        $ctx->setHandles($routeInfo[1]);
+        $ctx->next();
+        $this->assertEquals("test", $ctx->getResponseBody());
+
         $ctx = new Context(null, null);
-        $this->assertEquals("test", $routeInfo[1]($ctx));
-
         $routeInfo = $m->invoke($zorror, "GET", "/v1/test");
+        $ctx->setHandles($routeInfo[1]);
         $this->assertEquals(Dispatcher::FOUND, $routeInfo[0]);
-        $this->assertEquals("v1/test", $routeInfo[1]($ctx));
+        $ctx->next();
+        $this->assertEquals("v1/testxxxx", $ctx->getResponseBody());
 
+        $ctx = new Context(null, null);
         $routeInfo = $m->invoke($zorror, "GET", "/v1/test/xxx");
+        $ctx->setHandles($routeInfo[1]);
         $this->assertEquals(Dispatcher::FOUND, $routeInfo[0]);
-        $this->assertEquals("v1/test/xxx", $routeInfo[1]($ctx));
+        $ctx->next();
+        $this->assertEquals("v1/test/xxxxxxx", $ctx->getResponseBody());
 
+        $ctx = new Context(null, null);
         $routeInfo = $m->invoke($zorror, "POST", "/v2/fff");
+        $ctx->setHandles($routeInfo[1]);
         $this->assertEquals($routeInfo[0], Dispatcher::FOUND);
-        $this->assertEquals("v2/fff", $routeInfo[1]($ctx));
+        $ctx->next();
+        $this->assertEquals("v2/fff", $ctx->getResponseBody());
 
         $routeInfo = $m->invoke($zorror, "GET", "/v2/fff");
         $this->assertEquals(Dispatcher::METHOD_NOT_ALLOWED, $routeInfo[0]);

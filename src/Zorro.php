@@ -29,30 +29,48 @@ class Zorro extends RouteGroup
         $server->start();
     }
 
-    public function serveHttp(Request $request, Response $response): void
-    {
-        $context = new Context($request, $response);
-        $this->handleRequest($context);
-    }
-
     protected function initDispatcher(): void
     {
         $collector = new RouteCollector(new Std(), new GroupCountBased());
         $this->collectRouteGroup($collector, ["" => $this]);
         $this->dispatcher = new Dispatcher($collector->getData());
+        $this->handles = null;
+        $this->routeGroups = null;
+        $this->routes = null;
     }
 
     protected function collectRouteGroup(RouteCollector $collector, array $groups): void
     {
+        /**
+         * @var string $groupName
+         * @var RouteGroup $routeGroup
+         */
         foreach ($groups as $groupName => $routeGroup) {
             $collector->addGroup($groupName, function (RouteCollector $r) use ($collector, $routeGroup) {
                 foreach ($routeGroup->getRoutes() as $method => $routes) {
                     foreach ($routes as $path => $handle) {
-                        $r->addRoute($method, $path, $handle);
+                        $handles = $routeGroup->getHandles();
+                        $handles[] = $handle;
+                        $r->addRoute($method, $path, $handles);
                     }
                 }
                 $this->collectRouteGroup($collector, $routeGroup->getGroups());
             });
+        }
+    }
+
+    public function serveHttp(Request $request, Response $response): void
+    {
+        $context = new Context($request, $response);
+        try {
+            $this->handleRequest($context);
+            $context->response->status($context->getStatusCode());
+            foreach ($context->getResponseHeader() as $key => $value) {
+                $context->response->header($key, $value);
+            }
+            $context->response->end($context->getResponseBody());
+        } catch (\Throwable $e) {
+
         }
     }
 
@@ -66,7 +84,7 @@ class Zorro extends RouteGroup
         $routeInfo = $this->dispatch($ctx->request->server["request_method"], $ctx->request->server["request_uri"]);
         switch ($routeInfo[0]) {
             case Dispatcher::FOUND:
-                $ctx->setHandles([$routeInfo[1]]);
+                $ctx->setHandles($routeInfo[1]);
                 $ctx->setParams($routeInfo[2]);
                 $ctx->next();
                 break;
