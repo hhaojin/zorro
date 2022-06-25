@@ -15,11 +15,28 @@ use FastRoute\RouteParser\Std;
 use Swoole\Http\Request;
 use Swoole\Http\Response;
 use Swoole\Http\Server;
+use Symfony\Component\Serializer\Encoder\JsonEncoder;
+use Symfony\Component\Serializer\Encoder\XmlEncoder;
+use Symfony\Component\Serializer\Encoder\YamlEncoder;
+use Throwable;
+use Zorro\Serializer\Mapper;
+use Zorro\Serializer\Parser;
+use Zorro\Serializer\Serializer;
 
 class Zorro extends RouteGroup
 {
     /** @var Dispatcher */
     protected $dispatcher;
+
+    protected $serializer;
+
+    public function __construct()
+    {
+        $parser = new Parser([], [new XmlEncoder(), new JsonEncoder(), new YamlEncoder()]);
+        $mapper = new Mapper();
+        $serializer = new Serializer($mapper, $parser);
+        $this->serializer = $serializer;
+    }
 
     public function Run(int $port = 80, string $host = "0.0.0.0"): void
     {
@@ -64,13 +81,8 @@ class Zorro extends RouteGroup
         $context = new Context($request, $response);
         try {
             $this->handleRequest($context);
-            $context->response->status($context->getStatusCode());
-            foreach ($context->getResponseHeader() as $key => $value) {
-                $context->response->header($key, $value);
-            }
-            $context->response->end($context->getResponseBody());
-        } catch (\Throwable $e) {
-
+        } catch (Throwable $e) {
+            var_dump($e->getMessage());
         }
     }
 
@@ -81,21 +93,21 @@ class Zorro extends RouteGroup
 
     protected function handleRequest(Context $ctx): void
     {
-        $routeInfo = $this->dispatch($ctx->request->server["request_method"], $ctx->request->server["request_uri"]);
+        $routeInfo = $this->dispatch($ctx->getMethod(), $ctx->getUri());
         switch ($routeInfo[0]) {
             case Dispatcher::FOUND:
                 $ctx->setHandles($routeInfo[1]);
                 $ctx->setParams($routeInfo[2]);
+                $ctx->setSerializer($this->serializer);
                 $ctx->next();
                 break;
             case Dispatcher::NOT_FOUND:
-                $ctx->response->status(404);
-                $ctx->response->end();
+                $ctx->status(404);
                 break;
             case Dispatcher::METHOD_NOT_ALLOWED:
-                $ctx->response->status(405);
-                $ctx->response->end();
+                $ctx->status(405);
                 break;
         }
+        $ctx->end();
     }
 }

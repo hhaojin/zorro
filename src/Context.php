@@ -8,16 +8,21 @@
 
 namespace Zorro;
 
-use Swoole\Http\Request;
-use Swoole\Http\Response;
+use Zorro\Http\Header;
+use Zorro\Http\Request;
+use Zorro\Http\Response;
+use Zorro\Serializer\Serializer;
 
 class Context
 {
-    /** @var Request */
-    public $request;
+    use Request, Response;
 
-    /** @var Response */
-    public $response;
+    const abortIndex = 999;
+
+    protected $datas = [];
+
+    /** @var Serializer */
+    protected $serializer;
 
     protected $params = [];
 
@@ -25,16 +30,15 @@ class Context
 
     protected $index = -1;
 
-    protected $statusCode;
-
-    protected $responseHeader;
-
-    protected $responseBody;
-
     public function __construct($req, $resp)
     {
         $this->request = $req;
         $this->response = $resp;
+    }
+
+    public function setSerializer(Serializer $serializer): void
+    {
+        $this->serializer = $serializer;
     }
 
     public function setHandles(array $handles): void
@@ -47,64 +51,46 @@ class Context
         $this->params = $params;
     }
 
-    public function getStatusCode()
+    public function get($key)
     {
-        return $this->statusCode;
-    }
-
-    public function setStatusCode($statusCode): void
-    {
-        $this->statusCode = $statusCode;
-    }
-
-    public function getResponseHeader()
-    {
-        return $this->responseHeader;
-    }
-
-    public function setResponseHeader($responseHeader): void
-    {
-        $this->responseHeader = $responseHeader;
-    }
-
-    public function getResponseBody()
-    {
-        return $this->responseBody;
-    }
-
-    public function setResponseBody($responseBody): void
-    {
-        $this->responseBody = $responseBody;
-    }
-
-    public function param(string $name)
-    {
-        if (array_key_exists($name, $this->params)) {
-            return $this->params[$name];
+        if (isset($this->datas[$key])) {
+            return $this->datas[$key];
         }
-        return false;
+        return null;
     }
 
-    public function query()
+    public function set($key, $value)
     {
-
+        $this->datas[$key] = $value;
     }
 
-    public function bindJson()
+    public function bindJson(string $dest)
     {
-
+        if ($this->getHeader(Header::ContentType) !== Header::ContentTypeJson) {
+            return new $dest;
+        }
+        return $this->serializer->jsonUnmarshal($this->getRawContent(), $dest);
     }
 
-    public function bindQuery()
+    public function bindXml(string $dest)
     {
-
+        if ($this->getHeader(Header::ContentType) !== Header::ContentTypeXml) {
+            return new $dest;
+        }
+        return $this->serializer->xmlUnmarshal($this->getRawContent(), $dest);
     }
 
-    public function json(int $code, $body)
+    public function bindYaml(string $dest)
     {
-        $this->statusCode = $code;
-        $this->responseHeader["Content-Type"][] = "application/json";
-        $this->responseBody = json_encode($body, true);
+        if ($this->getHeader(Header::ContentType) !== Header::ContentTypeYaml) {
+            return new $dest;
+        }
+        return $this->serializer->yamlUnmarshal($this->getRawContent(), $dest);
+    }
+
+    public function bindQuery(string $dest)
+    {
+        return $this->serializer->getMapper()->Unmarsharl($this->getQuerys(), $dest);
     }
 
     public function next(): void
@@ -115,4 +101,39 @@ class Context
             $this->index++;
         }
     }
+
+    public function abort(): void
+    {
+        $this->index = self::abortIndex;
+    }
+
+    public function isAborted(): bool
+    {
+        return $this->index === self::abortIndex;
+    }
+
+    public function abortJson(int $code, $body)
+    {
+        $this->abort();
+        $this->json($code, $body);
+    }
+
+    public function abortXml(int $code, $body)
+    {
+        $this->abort();
+        $this->xml($code, $body);
+    }
+
+    public function abortYaml(int $code, $body)
+    {
+        $this->abort();
+        $this->yaml($code, $body);
+    }
+
+    public function abortStatus(int $code)
+    {
+        $this->abort();
+        $this->status($code);
+    }
+
 }
