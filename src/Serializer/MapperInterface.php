@@ -13,9 +13,9 @@ namespace Zorro\Serializer;
 interface MapperInterface
 {
     /**
-     * @param array|object[] $data
+     * @param array $data
      * @param string $dest
      * @return object|object[]
      */
-    public function Unmarsharl($data, string $dest);
+    public function Unmarsharl(array $data, string $dest);
 }

@@ -13,6 +13,7 @@ use PHPUnit\Framework\TestCase;
 use Symfony\Component\Serializer\Encoder\JsonEncoder;
 use Symfony\Component\Serializer\Encoder\XmlEncoder;
 use Symfony\Component\Serializer\Encoder\YamlEncoder;
+use Zorro\Validation\Eq;
 
 class Address
 {
@@ -21,6 +22,7 @@ class Address
 
 class Person
 {
+    #[Eq(19)]
     public $age;
     public $name;
     /** @var Address */

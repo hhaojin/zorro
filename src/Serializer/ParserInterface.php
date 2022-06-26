@@ -15,7 +15,7 @@ interface ParserInterface
     /**
      * @param string $data
      * @param array $context
-     * @return array|object[]
+     * @return array
      */
     public function decodeJson(string $data, array $context = []): array;
 
@@ -28,9 +28,9 @@ interface ParserInterface
     /**
      * @param string $data
      * @param array $context
-     * @return array|object[]
+     * @return array
      */
-    public function decodeXml(string $data, array $context = []);
+    public function decodeXml(string $data, array $context = []): array;
 
     /**
      * @param array|object $data
@@ -41,9 +41,9 @@ interface ParserInterface
     /**
      * @param string $data
      * @param array $context
-     * @return array|object[]
+     * @return array
      */
-    public function decodeYaml(string $data, array $context = []);
+    public function decodeYaml(string $data, array $context = []): array;
 
     /**
      * @param array|object $data
