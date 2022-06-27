@@ -9,13 +9,17 @@
 namespace Zorro;
 
 use Zorro\Http\Header;
-use Zorro\Http\Request;
-use Zorro\Http\Response;
+use Zorro\Http\RequsetInterface;
+use Zorro\Http\ResponseInterface;
 use Zorro\Serializer\Serializer;
 
 class Context
 {
-    use Request, Response;
+    /** @var */
+    protected $request;
+
+    /** @var ResponseInterface */
+    public $response;
 
     const abortIndex = 999;
 
@@ -30,7 +34,7 @@ class Context
 
     protected $index = -1;
 
-    public function __construct($req, $resp)
+    public function __construct(RequsetInterface $req, ResponseInterface $resp)
     {
         $this->request = $req;
         $this->response = $resp;
@@ -62,6 +66,54 @@ class Context
     public function set($key, $value)
     {
         $this->datas[$key] = $value;
+    }
+
+    public function getParam(string $name)
+    {
+        if (isset($this->params[$name])) {
+            return $this->params[$name];
+        }
+        return null;
+    }
+
+    public function getParams(): array
+    {
+        return $this->params;
+    }
+
+    public function getMethod(): string
+    {
+        return $this->request->getMethod();
+    }
+
+    public function getUri(): string
+    {
+        return $this->request->getUri();
+    }
+
+    public function getHeader(string $key): string
+    {
+        return $this->request->getHeader($key);
+    }
+
+    public function getRawContent(): string
+    {
+        return $this->request->getRawContent();
+    }
+
+    public function getQuerys(): array
+    {
+        return $this->request->getQuerys();
+    }
+
+    public function end(): void
+    {
+        $this->response->end();
+    }
+
+    public function status(int $code): void
+    {
+        $this->response->status($code);
     }
 
     public function bindJson(string $dest)
@@ -134,6 +186,46 @@ class Context
     {
         $this->abort();
         $this->status($code);
+    }
+
+    public function header(string $key, string $value): void
+    {
+        $this->response->header($key, $value);
+    }
+
+    public function string(int $code, string $body): void
+    {
+        $this->status($code);
+        $this->header(Header::ContentType, Header::ContentTypeText);
+        $this->response->write($this->serializer->jsonMarshal($body));
+    }
+
+    public function html(int $code, string $body): void
+    {
+        $this->status($code);
+        $this->header(Header::ContentType, Header::ContentTypeHtml);
+        $this->response->write($this->serializer->jsonMarshal($body));
+    }
+
+    public function json(int $code, $body): void
+    {
+        $this->status($code);
+        $this->header(Header::ContentType, Header::ContentTypeJson);
+        $this->response->write($this->serializer->jsonMarshal($body));
+    }
+
+    public function xml(int $code, $body): void
+    {
+        $this->status($code);
+        $this->header(Header::ContentType, Header::ContentTypeXml);
+        $this->response->write($this->serializer->xmlMarshal($body));
+    }
+
+    public function yaml(int $code, $body): void
+    {
+        $this->status($code);
+        $this->header(Header::ContentType, Header::ContentTypeYaml);
+        $this->response->write($this->serializer->xmlMarshal($body));
     }
 
 }

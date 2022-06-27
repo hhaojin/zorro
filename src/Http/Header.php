@@ -12,9 +12,13 @@ namespace Zorro\Http;
 
 class Header
 {
-    const ContentType = "Content-Type";
+    const ContentType = "content-type";
 
-    const ContentTypeJson = "application/json; charset=utf-8";
-    const ContentTypeXml = "application/xml; charset=utf-8";
-    const ContentTypeYaml = "application/x-yaml; charset=utf-8";
+    const ContentTypeText = "text/plain";
+    const ContentTypeHtml = "text/html";
+    const ContentTypeJson = "application/json";
+    const ContentTypeXml = "application/xml";
+    const ContentTypeYaml = "application/x-yaml";
+
+    const Utf8Charset = "charset=utf-8";
 }

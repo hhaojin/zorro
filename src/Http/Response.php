@@ -10,38 +10,36 @@
 namespace Zorro\Http;
 
 
-trait Response
+class Response implements ResponseInterface
 {
     /** @var \Swoole\Http\Response */
     protected $response;
 
-    protected $statusCode;
+    /** @var int */
+    protected $statusCode = 0;
 
-    protected $responseHeader;
+    /** @var array */
+    protected $responseHeader = [];
 
-    protected $responseBody;
+    /** @var string */
+    protected $body = "";
 
-    public function getStatusCode()
+    public function __construct($response)
+    {
+        $this->response = $response;
+    }
+
+    public function getStatusCode(): int
     {
         return $this->statusCode;
     }
 
-    public function getResponseHeader()
+    public function getHeader(string $key): string
     {
-        return $this->responseHeader;
+        return $this->responseHeader[$key];
     }
 
-    public function getResponseBody()
-    {
-        return $this->responseBody;
-    }
-
-    public function setResponseBody($responseBody): void
-    {
-        $this->responseBody = $responseBody;
-    }
-
-    public function header($key, $value)
+    public function header(string $key, $value)
     {
         $this->responseHeader[$key] = $value;
     }
@@ -51,39 +49,20 @@ trait Response
         $this->statusCode = $code;
     }
 
-    public function json(int $code, $body)
+    public function write(string $body): void
     {
-        $this->status($code);
-        $this->header(Header::ContentType, Header::ContentTypeJson);;
-        $this->setResponseBody($this->serializer->jsonMarshal($body));
-    }
-
-    public function xml(int $code, $body)
-    {
-        $this->status($code);
-        $this->header(Header::ContentType, Header::ContentTypeXml);
-        $this->setResponseBody($this->serializer->xmlMarshal($body));
-    }
-
-    public function yaml(int $code, $body)
-    {
-        $this->status($code);
-        $this->header(Header::ContentType, Header::ContentTypeYaml);
-        $this->setResponseBody($this->serializer->xmlMarshal($body));
+        $this->body .= $body;
     }
 
     public function end(): void
     {
         $this->response->status($this->getStatusCode());
-        foreach ($this->getResponseHeader() as $key => $value) {
+        foreach ($this->responseHeader as $key => $value) {
             $this->response->header($key, $value);
         }
-        $body = $this->getResponseBody();
-        if ($body !== null) {
-            $this->response->end($body);
-            return;
+        if (strlen($this->body) > 0) {
+            $this->response->write($this->body);
         }
         $this->response->end();
     }
-
 }

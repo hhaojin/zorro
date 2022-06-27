@@ -10,38 +10,30 @@
 namespace Zorro\Http;
 
 
-trait Request
+class Request implements RequsetInterface
 {
     /** @var \Swoole\Http\Request */
     protected $request;
 
-    public function getHeader($key)
+    public function __construct(\Swoole\Http\Request $request)
+    {
+        $this->request = $request;
+    }
+
+    public function getHeader(string $key): string
     {
         if (isset($this->request->header[$key])) {
             return $this->request->header[$key];
         }
-        return null;
+        return "";
     }
 
-    public function getParam(string $name)
-    {
-        if (isset($this->params[$name])) {
-            return $this->params[$name];
-        }
-        return null;
-    }
-
-    public function getParams(): array
-    {
-        return $this->params;
-    }
-
-    public function getQuery($key)
+    public function getQuery(string $key): string
     {
         if (isset($this->request->get[$key])) {
             return $this->request->get[$key];
         }
-        return null;
+        return "";
     }
 
     public function getQuerys(): array
@@ -49,12 +41,12 @@ trait Request
         return $this->request->get;
     }
 
-    public function postForm(string $key)
+    public function postForm(string $key): string
     {
         if (isset($this->request->post[$key])) {
             return $this->request->post[$key];
         }
-        return null;
+        return "";
     }
 
     public function postForms(): array
@@ -62,7 +54,7 @@ trait Request
         return $this->request->post;
     }
 
-    public function getRawContent()
+    public function getRawContent(): string
     {
         return $this->request->rawContent();
     }

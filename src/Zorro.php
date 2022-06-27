@@ -19,6 +19,8 @@ use Symfony\Component\Serializer\Encoder\JsonEncoder;
 use Symfony\Component\Serializer\Encoder\XmlEncoder;
 use Symfony\Component\Serializer\Encoder\YamlEncoder;
 use Throwable;
+use Zorro\Http\Request as HttpRequest;
+use Zorro\Http\Response as HttpResponse;
 use Zorro\Serializer\Mapper;
 use Zorro\Serializer\Parser;
 use Zorro\Serializer\Serializer;
@@ -78,7 +80,7 @@ class Zorro extends RouteGroup
 
     public function serveHttp(Request $request, Response $response): void
     {
-        $context = new Context($request, $response);
+        $context = new Context(new HttpRequest($request), new HttpResponse($response));
         try {
             $this->handleRequest($context);
         } catch (Throwable $e) {
