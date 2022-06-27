@@ -7,13 +7,15 @@
  */
 
 
-namespace Zorro;
+namespace Zorro\Aspect;
 
 
-class InjectContext
+class PointContext
 {
+    /** @var int */
     private $index;
 
+    /** @var \Closure[] */
     private $handles;
 
     private $bizHandleRes;
@@ -29,7 +31,6 @@ class InjectContext
         $this->index++;
         while ($this->index < count($this->handles)) {
             //最后一个handle为业务函数，有返回值
-            /** @var $handle \Closure */
             $handle = $this->handles[$this->index];
             if ($this->index + 1 === count($this->handles)) {
                 $this->bizHandleRes = $handle(...$args);
