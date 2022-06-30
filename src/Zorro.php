@@ -8,10 +8,7 @@
 
 namespace Zorro;
 
-use FastRoute\DataGenerator\GroupCountBased;
 use FastRoute\Dispatcher\GroupCountBased as Dispatcher;
-use FastRoute\RouteCollector;
-use FastRoute\RouteParser\Std;
 use Swoole\Http\Request;
 use Swoole\Http\Response;
 use Swoole\Http\Server;
@@ -32,6 +29,8 @@ class Zorro extends RouteGroup
 
     protected $serializer;
 
+    protected $scanDirs = [];
+
     public function __construct()
     {
         $parser = new Parser([], [new XmlEncoder(), new JsonEncoder(), new YamlEncoder()]);
@@ -48,33 +47,22 @@ class Zorro extends RouteGroup
         $server->start();
     }
 
-    protected function initDispatcher(): void
+    public function initDispatcher(): void
     {
-        $collector = new RouteCollector(new Std(), new GroupCountBased());
-        $this->collectRouteGroup($collector, ["" => $this]);
-        $this->dispatcher = new Dispatcher($collector->getData());
-        $this->handles = null;
-        $this->routeGroups = null;
-        $this->routes = null;
+        $this->dispatcher = new Dispatcher($this->handles());
     }
 
-    protected function collectRouteGroup(RouteCollector $collector, array $groups): void
+    public function scanDir(string ...$dirs): void
     {
-        /**
-         * @var string $groupName
-         * @var RouteGroup $routeGroup
-         */
-        foreach ($groups as $groupName => $routeGroup) {
-            $collector->addGroup($groupName, function (RouteCollector $r) use ($collector, $routeGroup) {
-                foreach ($routeGroup->getRoutes() as $method => $routes) {
-                    foreach ($routes as $path => $handle) {
-                        $handles = $routeGroup->getHandles();
-                        $handles[] = $handle;
-                        $r->addRoute($method, $path, $handles);
-                    }
-                }
-                $this->collectRouteGroup($collector, $routeGroup->getGroups());
-            });
+        $this->scanDirs = $dirs;
+    }
+
+    public function collectAttribute()
+    {
+        FileLoader::loadDirFiles(...$this->scanDirs);
+        $classes = get_declared_classes();
+        foreach ($classes as $class) {
+
         }
     }
 

@@ -10,6 +10,10 @@
 namespace Zorro;
 
 
+use FastRoute\DataGenerator\GroupCountBased;
+use FastRoute\RouteCollector;
+use FastRoute\RouteParser\Std;
+
 class RouteGroup
 {
     protected $groupName;
@@ -19,6 +23,36 @@ class RouteGroup
     protected $routeGroups = [];
 
     protected $handles = [];
+
+    protected function handles(): array
+    {
+        $collector = new RouteCollector(new Std(), new GroupCountBased());
+        $this->collectRouteGroup($collector, ["" => $this]);
+        $this->handles = null;
+        $this->routeGroups = null;
+        $this->routes = null;
+        return $collector->getData();
+    }
+
+    protected function collectRouteGroup(RouteCollector $collector, array $groups): void
+    {
+        /**
+         * @var string $groupName
+         * @var RouteGroup $routeGroup
+         */
+        foreach ($groups as $groupName => $routeGroup) {
+            $collector->addGroup($groupName, function (RouteCollector $r) use ($collector, $routeGroup) {
+                foreach ($routeGroup->getRoutes() as $method => $routes) {
+                    foreach ($routes as $path => $handle) {
+                        $handles = $routeGroup->getHandles();
+                        $handles[] = $handle;
+                        $r->addRoute($method, $path, $handles);
+                    }
+                }
+                $this->collectRouteGroup($collector, $routeGroup->getGroups());
+            });
+        }
+    }
 
     public function getRoutes(): array
     {
