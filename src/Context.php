@@ -11,7 +11,7 @@ namespace Zorro;
 use Zorro\Http\Header;
 use Zorro\Http\RequsetInterface;
 use Zorro\Http\ResponseInterface;
-use Zorro\Serializer\Serializer;
+use Zorro\Serializer\SerializerInterface;
 
 class Context
 {
@@ -25,7 +25,7 @@ class Context
 
     protected $datas = [];
 
-    /** @var Serializer */
+    /** @var SerializerInterface */
     protected $serializer;
 
     protected $params = [];
@@ -40,7 +40,7 @@ class Context
         $this->response = $resp;
     }
 
-    public function setSerializer(Serializer $serializer): void
+    public function setSerializer(SerializerInterface $serializer): void
     {
         $this->serializer = $serializer;
     }
@@ -142,7 +142,7 @@ class Context
 
     public function bindQuery(string $dest)
     {
-        return $this->serializer->getMapper()->Unmarsharl($this->getQuerys(), $dest);
+        return $this->serializer->Unmarsharl($this->getQuerys(), $dest);
     }
 
     public function next(): void

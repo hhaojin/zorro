@@ -12,31 +12,25 @@ use FastRoute\Dispatcher\GroupCountBased as Dispatcher;
 use Swoole\Http\Request;
 use Swoole\Http\Response;
 use Swoole\Http\Server;
-use Symfony\Component\Serializer\Encoder\JsonEncoder;
-use Symfony\Component\Serializer\Encoder\XmlEncoder;
-use Symfony\Component\Serializer\Encoder\YamlEncoder;
 use Throwable;
 use Zorro\Http\Request as HttpRequest;
 use Zorro\Http\Response as HttpResponse;
-use Zorro\Serializer\Mapper;
-use Zorro\Serializer\Parser;
 use Zorro\Serializer\Serializer;
+use Zorro\Serializer\SerializerInterface;
 
 class Zorro extends RouteGroup
 {
     /** @var Dispatcher */
     protected $dispatcher;
 
+    /** @var SerializerInterface */
     protected $serializer;
 
     protected $scanDirs = [];
 
     public function __construct()
     {
-        $parser = new Parser([], [new XmlEncoder(), new JsonEncoder(), new YamlEncoder()]);
-        $mapper = new Mapper();
-        $serializer = new Serializer($mapper, $parser);
-        $this->serializer = $serializer;
+        $this->serializer = Serializer::default();
     }
 
     public function Run(int $port = 80, string $host = "0.0.0.0"): void

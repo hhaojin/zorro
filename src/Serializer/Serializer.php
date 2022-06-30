@@ -9,7 +9,11 @@
 
 namespace Zorro\Serializer;
 
-class Serializer
+use Symfony\Component\Serializer\Encoder\JsonEncoder;
+use Symfony\Component\Serializer\Encoder\XmlEncoder;
+use Symfony\Component\Serializer\Encoder\YamlEncoder;
+
+class Serializer implements SerializerInterface
 {
     /** @var MapperInterface */
     private $mapper;
@@ -17,20 +21,18 @@ class Serializer
     /** @var ParserInterface */
     private $parser;
 
+    public static function default(): SerializerInterface
+    {
+        $parser = new Parser([], [new XmlEncoder(), new JsonEncoder(), new YamlEncoder()]);
+        $mapper = new Mapper();
+        $serializer = new self($mapper, $parser);
+        return $serializer;
+    }
+
     public function __construct(MapperInterface $mapper, ParserInterface $parser)
     {
         $this->mapper = $mapper;
         $this->parser = $parser;
-    }
-
-    public function getParser(): ParserInterface
-    {
-        return $this->parser;
-    }
-
-    public function getMapper(): MapperInterface
-    {
-        return $this->mapper;
     }
 
     public function jsonUnmarshal(string $data, string $dest)
@@ -66,4 +68,8 @@ class Serializer
         return $this->parser->encodeYaml($data);
     }
 
+    public function Unmarsharl(array $data, string $dest)
+    {
+        return $this->mapper->Unmarsharl($data, $dest);
+    }
 }
