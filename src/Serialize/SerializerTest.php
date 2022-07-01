@@ -7,12 +7,13 @@
  */
 
 
-namespace Zorro\Serializer;
+namespace Zorro\Serialize;
 
 use PHPUnit\Framework\TestCase;
 use Symfony\Component\Serializer\Encoder\JsonEncoder;
 use Symfony\Component\Serializer\Encoder\XmlEncoder;
 use Symfony\Component\Serializer\Encoder\YamlEncoder;
+use Zorro\Serialize\Mapper\Mapper;
 use Zorro\Validation\Eq;
 
 class Address

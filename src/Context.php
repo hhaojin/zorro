@@ -11,7 +11,9 @@ namespace Zorro;
 use Zorro\Http\Header;
 use Zorro\Http\RequsetInterface;
 use Zorro\Http\ResponseInterface;
-use Zorro\Serializer\SerializerInterface;
+use Zorro\Serialize\Json;
+use Zorro\Serialize\Xml;
+use Zorro\Serialize\Yaml;
 
 class Context
 {
@@ -25,9 +27,6 @@ class Context
 
     protected $datas = [];
 
-    /** @var SerializerInterface */
-    protected $serializer;
-
     protected $params = [];
 
     protected $handles = [];
@@ -38,11 +37,6 @@ class Context
     {
         $this->request = $req;
         $this->response = $resp;
-    }
-
-    public function setSerializer(SerializerInterface $serializer): void
-    {
-        $this->serializer = $serializer;
     }
 
     public function setHandles(array $handles): void
@@ -121,7 +115,7 @@ class Context
         if ($this->getHeader(Header::ContentType) !== Header::ContentTypeJson) {
             return new $dest;
         }
-        return $this->serializer->jsonUnmarshal($this->getRawContent(), $dest);
+        return Json::Unmarshal($this->getRawContent(), $dest);
     }
 
     public function bindXml(string $dest)
@@ -129,7 +123,7 @@ class Context
         if ($this->getHeader(Header::ContentType) !== Header::ContentTypeXml) {
             return new $dest;
         }
-        return $this->serializer->xmlUnmarshal($this->getRawContent(), $dest);
+        return Xml::Unmarshal($this->getRawContent(), $dest);
     }
 
     public function bindYaml(string $dest)
@@ -137,12 +131,12 @@ class Context
         if ($this->getHeader(Header::ContentType) !== Header::ContentTypeYaml) {
             return new $dest;
         }
-        return $this->serializer->yamlUnmarshal($this->getRawContent(), $dest);
+        return Yaml::Unmarshal($this->getRawContent(), $dest);
     }
 
     public function bindQuery(string $dest)
     {
-        return $this->serializer->Unmarsharl($this->getQuerys(), $dest);
+        return Json::$mapper->Unmarsharl($this->getQuerys(), $dest);
     }
 
     public function next(): void
@@ -197,35 +191,35 @@ class Context
     {
         $this->status($code);
         $this->header(Header::ContentType, Header::ContentTypeText);
-        $this->response->write($this->serializer->jsonMarshal($body));
+        $this->response->write($body);
     }
 
     public function html(int $code, string $body): void
     {
         $this->status($code);
         $this->header(Header::ContentType, Header::ContentTypeHtml);
-        $this->response->write($this->serializer->jsonMarshal($body));
+        $this->response->write($body);
     }
 
     public function json(int $code, $body): void
     {
         $this->status($code);
         $this->header(Header::ContentType, Header::ContentTypeJson);
-        $this->response->write($this->serializer->jsonMarshal($body));
+        $this->response->write(Json::Marshal($body));
     }
 
     public function xml(int $code, $body): void
     {
         $this->status($code);
         $this->header(Header::ContentType, Header::ContentTypeXml);
-        $this->response->write($this->serializer->xmlMarshal($body));
+        $this->response->write(Xml::Marshal($body));
     }
 
     public function yaml(int $code, $body): void
     {
         $this->status($code);
         $this->header(Header::ContentType, Header::ContentTypeYaml);
-        $this->response->write($this->serializer->xmlMarshal($body));
+        $this->response->write(Yaml::Marshal($body));
     }
 
 }

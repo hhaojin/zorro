@@ -15,26 +15,16 @@ use Swoole\Http\Server;
 use Throwable;
 use Zorro\Http\Request as HttpRequest;
 use Zorro\Http\Response as HttpResponse;
-use Zorro\Serializer\Serializer;
-use Zorro\Serializer\SerializerInterface;
+use Zorro\Serialize\Serializer;
 
 class Zorro extends RouteGroup
 {
     /** @var Dispatcher */
     protected $dispatcher;
 
-    /** @var SerializerInterface */
-    protected $serializer;
-
-    protected $scanDirs = [];
-
-    public function __construct()
-    {
-        $this->serializer = Serializer::default();
-    }
-
     public function Run(int $port = 80, string $host = "0.0.0.0"): void
     {
+        Serializer::init();
         $this->initDispatcher();
         $server = new Server($host, $port);
         $server->on("request", [$this, "serveHttp"]);
@@ -82,7 +72,6 @@ class Zorro extends RouteGroup
             case Dispatcher::FOUND:
                 $ctx->setHandles($routeInfo[1]);
                 $ctx->setParams($routeInfo[2]);
-                $ctx->setSerializer($this->serializer);
                 $ctx->next();
                 break;
             case Dispatcher::NOT_FOUND:

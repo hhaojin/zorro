@@ -7,7 +7,7 @@
  */
 
 
-namespace Zorro\Serializer;
+namespace Zorro\Serialize\Mapper;
 
 
 class MapperException extends \Exception
