@@ -45,7 +45,15 @@ class RouteGroup
                 foreach ($routeGroup->getRoutes() as $method => $routes) {
                     foreach ($routes as $path => $handle) {
                         $handles = $routeGroup->getHandles();
-                        $handles[] = $handle;
+                        if (is_callable($handle)) {
+                            $handles[] = $handle;
+                        }
+                        if (is_array($handle) && count($handle) == 2 && BeanFactory::hasBean($handle[0])) {
+                            $handles[] = function (Context $context) use ($handle) {
+                                $bean = BeanFactory::getBean($handle[0]);
+                                call_user_func([$bean, $handle[1]], $context);
+                            };
+                        }
                         $r->addRoute($method, $path, $handles);
                     }
                 }
@@ -95,32 +103,62 @@ class RouteGroup
         array_push($this->handles, ...$this->parseHandle(...$handles));
     }
 
-    public function Get(string $path, \Closure $handle): void
+    /**
+     * @param string $path
+     * @param callable|array $handle
+     * @return void
+     */
+    public function Get(string $path, $handle): void
     {
         $this->routes["GET"][$path] = $handle;
     }
 
-    public function Post(string $path, \Closure $handle): void
+    /**
+     * @param string $path
+     * @param callable|array $handle
+     * @return void
+     */
+    public function Post(string $path, $handle): void
     {
         $this->routes["POST"][$path] = $handle;
     }
 
-    public function Put(string $path, \Closure $handle): void
+    /**
+     * @param string $path
+     * @param callable|array $handle
+     * @return void
+     */
+    public function Put(string $path, $handle): void
     {
         $this->routes["PUT"][$path] = $handle;
     }
 
-    public function Delete(string $path, \Closure $handle): void
+    /**
+     * @param string $path
+     * @param callable|array $handle
+     * @return void
+     */
+    public function Delete(string $path, $handle): void
     {
         $this->routes["DELETE"][$path] = $handle;
     }
 
-    public function Patch(string $path, \Closure $handle): void
+    /**
+     * @param string $path
+     * @param callable|array $handle
+     * @return void
+     */
+    public function Patch(string $path, $handle): void
     {
         $this->routes["PATCH"][$path] = $handle;
     }
 
-    public function Head(string $path, \Closure $handle): void
+    /**
+     * @param string $path
+     * @param callable|array $handle
+     * @return void
+     */
+    public function Head(string $path, $handle): void
     {
         $this->routes["HEAD"][$path] = $handle;
     }

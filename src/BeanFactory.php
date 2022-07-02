@@ -8,7 +8,7 @@ use DI\ContainerBuilder;
 class BeanFactory
 {
     /** @var Container */
-    private static $container;
+    public static $container;
 
     public static function _init()
     {
@@ -21,8 +21,19 @@ class BeanFactory
         try {
             return self::$container->get($beanName);
         } catch (\Exception $e) {
+            var_dump($e->getMessage());
             return false;
         }
+    }
+
+    public static function hasBean($beanName)
+    {
+        return self::$container->has($beanName);
+    }
+
+    public static function make($beanName)
+    {
+        return self::$container->make($beanName);
     }
 
     public static function setBean($beanName, $bean)

@@ -12,7 +12,6 @@ use FastRoute\Dispatcher\GroupCountBased as Dispatcher;
 use Swoole\Http\Request;
 use Swoole\Http\Response;
 use Swoole\Http\Server;
-use Throwable;
 use Zorro\Attribute\Collector\AttributeCollector;
 use Zorro\Http\Request as HttpRequest;
 use Zorro\Http\Response as HttpResponse;
@@ -34,13 +33,16 @@ class Zorro extends RouteGroup
         $this->initDispatcher();
         $server = new Server($host, $port);
         $server->on("request", [$this, "serveHttp"]);
+        $server->on("start", function () { cli_set_process_title("zorro_master"); });
+        $server->on("workerStart", function (\Swoole\Server $server, int $workerId) { cli_set_process_title("zorro_worker" . $workerId); });
+        $server->on("managerStart", function () { cli_set_process_title("zorro_manager"); });
         $server->start();
     }
 
     public function initDispatcher(): void
     {
         $handles = $this->handles();
-//        $this->printHandles($handles);
+        $this->printHandles($handles);
         $this->dispatcher = new Dispatcher($handles);
     }
 
@@ -60,17 +62,14 @@ class Zorro extends RouteGroup
     public function scanDir(array $dirs, array $namespaces): void
     {
         FileLoader::loadDirFiles(...$dirs);
-        AttributeCollector::collectAttribute($namespaces);
+        $classes = get_declared_classes();
+        AttributeCollector::collectAttributes($classes, $namespaces);
     }
 
     public function serveHttp(Request $request, Response $response): void
     {
         $context = new Context(new HttpRequest($request), new HttpResponse($response));
-        try {
-            $this->handleRequest($context);
-        } catch (Throwable $e) {
-            var_dump($e->getMessage());
-        }
+        $this->handleRequest($context);
     }
 
     public function dispatch(string $method, string $uri): array

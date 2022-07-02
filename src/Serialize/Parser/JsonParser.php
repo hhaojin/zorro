@@ -15,6 +15,8 @@ class JsonParser implements ParserInterface
 {
     const type = 'json';
 
+    const EncodeOptions = "json_encode_options";
+
     /** @var JsonEncoder */
     protected $encoder;
 

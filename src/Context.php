@@ -12,6 +12,7 @@ use Zorro\Http\Header;
 use Zorro\Http\RequsetInterface;
 use Zorro\Http\ResponseInterface;
 use Zorro\Serialize\Json;
+use Zorro\Serialize\Parser\JsonParser;
 use Zorro\Serialize\Xml;
 use Zorro\Serialize\Yaml;
 
@@ -205,7 +206,8 @@ class Context
     {
         $this->status($code);
         $this->header(Header::ContentType, Header::ContentTypeJson);
-        $this->response->write(Json::Marshal($body));
+        $data = Json::Marshal($body, [JsonParser::EncodeOptions => JSON_UNESCAPED_UNICODE]);
+        $this->response->write($data);
     }
 
     public function xml(int $code, $body): void

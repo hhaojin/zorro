@@ -8,7 +8,8 @@
     ],
     "autoload": {
         "psr-4": {
-            "Zorro\\": "src"
+            "Zorro\\": "src",
+            "Example\\": "example"
         }
     },
     "require-dev": {

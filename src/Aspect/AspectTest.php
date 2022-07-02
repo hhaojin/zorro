@@ -14,11 +14,11 @@ class AspectTest extends TestCase
 {
     public function testCall(): void
     {
-        $f1 = function (PointContext $c, $args) {
-            $c->next($args);
+        $f1 = function (JoinPoint $c, $args) {
+            $c->process($args);
         };
-        $f2 = function (PointContext $c, $args) {
-            $c->next($args);
+        $f2 = function (JoinPoint $c, $args) {
+            $c->process($args);
         };
         $f3 = function ($a, $b, $c) {
 
@@ -30,11 +30,11 @@ class AspectTest extends TestCase
     public function testCall2(): void
     {
         $th = new class {
-            public function test(PointContext $ctx, array $args): void
+            public function test(JoinPoint $ctx, array $args): void
             {
                 var_dump("f1_>");
                 $args[0]++;
-                $ret = $ctx->next($args);
+                $ret = $ctx->process($args);
                 var_dump("f1_>{$ret}");
             }
         };
@@ -42,7 +42,7 @@ class AspectTest extends TestCase
         $m = $rf->getMethod("test");
         $f1 = $m->getClosure($th);
 
-        $f2 = function (PointContext $c, $args) {
+        $f2 = function (JoinPoint $c, $args) {
             var_dump("f2_>");
         };
         $f3 = function ($a, $b, $c) {

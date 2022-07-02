@@ -4,10 +4,15 @@ namespace Zorro\Attribute\Collector;
 
 use ReflectionProperty;
 
-class PropertiesAttributeCollector extends AbstractCollector
+class PropertiesAttributeCollector
 {
-    public function collect(ReflectionProperty $rf)
+    /**
+     * @param ReflectionProperty $rf
+     * @param object $instance
+     * @return void
+     */
+    static function collect(ReflectionProperty $rf, object $bean): void
     {
-        $this->handleAttrs($rf->getAttributes());
+
     }
 }

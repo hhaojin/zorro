@@ -13,5 +13,5 @@ namespace Zorro\Aspect;
 interface AspectInterface
 {
     //example cache, log, traceing, metric
-    public function handle(PointContext $ctx, array $args): void;
+    public function handle(JoinPoint $ctx, array $args): void;
 }

@@ -2,6 +2,7 @@
 
 namespace Zorro\Serialize;
 
+use Symfony\Component\Serializer\Encoder\JsonDecode;
 use Zorro\Serialize\Mapper\MapperInterface;
 use Zorro\Serialize\Parser\ParserInterface;
 
@@ -21,6 +22,6 @@ class Json implements SerializerInterface
 
     public static function Marshal($data, array $context = []): string
     {
-        return self::$parser->encode($data);
+        return self::$parser->encode($data, $context);
     }
 }

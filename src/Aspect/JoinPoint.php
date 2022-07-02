@@ -10,7 +10,7 @@
 namespace Zorro\Aspect;
 
 
-class PointContext
+class JoinPoint
 {
     /** @var int */
     private $index;
@@ -26,7 +26,7 @@ class PointContext
         $this->handles = $handles;
     }
 
-    public function next(array $args)
+    public function process(array $args)
     {
         $this->index++;
         while ($this->index < count($this->handles)) {
