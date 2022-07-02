@@ -13,6 +13,7 @@ use Swoole\Http\Request;
 use Swoole\Http\Response;
 use Swoole\Http\Server;
 use Throwable;
+use Zorro\Attribute\Collector\AttributeCollector;
 use Zorro\Http\Request as HttpRequest;
 use Zorro\Http\Response as HttpResponse;
 use Zorro\Serialize\Serializer;
@@ -22,9 +23,14 @@ class Zorro extends RouteGroup
     /** @var Dispatcher */
     protected $dispatcher;
 
+    public function __construct()
+    {
+        BeanFactory::_init();
+        Serializer::init();
+    }
+
     public function Run(int $port = 80, string $host = "0.0.0.0"): void
     {
-        Serializer::init();
         $this->initDispatcher();
         $server = new Server($host, $port);
         $server->on("request", [$this, "serveHttp"]);
@@ -33,21 +39,28 @@ class Zorro extends RouteGroup
 
     public function initDispatcher(): void
     {
-        $this->dispatcher = new Dispatcher($this->handles());
+        $handles = $this->handles();
+//        $this->printHandles($handles);
+        $this->dispatcher = new Dispatcher($handles);
     }
 
-    public function scanDir(string ...$dirs): void
+    private function printHandles(array $handles)
     {
-        $this->scanDirs = $dirs;
-    }
-
-    public function collectAttribute()
-    {
-        FileLoader::loadDirFiles(...$this->scanDirs);
-        $classes = get_declared_classes();
-        foreach ($classes as $class) {
-
+        list($staticRoute, $variableRouteData) = $handles;
+        foreach ($staticRoute as $method => $handle) {
+            echo $method . "   -->   " . array_key_first($handle) . PHP_EOL;
         }
+        foreach ($variableRouteData as $method => $handle) {
+            foreach ($handle as $uris) {
+                echo $method . "   -->   " . $uris["regex"] . PHP_EOL;
+            }
+        }
+    }
+
+    public function scanDir(array $dirs, array $namespaces): void
+    {
+        FileLoader::loadDirFiles(...$dirs);
+        AttributeCollector::collectAttribute($namespaces);
     }
 
     public function serveHttp(Request $request, Response $response): void

@@ -21,6 +21,7 @@
         "symfony/serializer": "^5.4",
         "symfony/property-access": "^5.4",
         "symfony/yaml": "^5.4",
-        "respect/validation": "^2.2"
+        "respect/validation": "^2.2",
+        "php-di/php-di": "^6.3"
     }
 }
