@@ -30,12 +30,19 @@ class Zorro extends RouteGroup
 
     public function Run(int $port = 80, string $host = "0.0.0.0"): void
     {
+        $this->echoLogo();
         $this->initDispatcher();
         $server = new Server($host, $port);
         $server->on("request", [$this, "serveHttp"]);
-        $server->on("start", function () { cli_set_process_title("zorro_master"); });
-        $server->on("workerStart", function (\Swoole\Server $server, int $workerId) { cli_set_process_title("zorro_worker" . $workerId); });
-        $server->on("managerStart", function () { cli_set_process_title("zorro_manager"); });
+        $server->on("start", function () {
+            cli_set_process_title("zorro_master");
+        });
+        $server->on("workerStart", function (\Swoole\Server $server, int $workerId) {
+            cli_set_process_title("zorro_worker" . $workerId);
+        });
+        $server->on("managerStart", function () {
+            cli_set_process_title("zorro_manager");
+        });
         $server->start();
     }
 
@@ -94,5 +101,32 @@ class Zorro extends RouteGroup
                 break;
         }
         $ctx->end();
+    }
+
+    protected function echoLogo()
+    {
+        echo <<<LOGO
+                                                     __----~~~~~~~~~~~------___
+                                    .  .   ~~//====......          __--~ ~~
+                    -.            \_|//     |||\\  ~~~~~~::::... /~
+                 ___-==_       _-~o~  \/    |||  \\            _/~~-
+         __---~~~.==~||\=_    -_--~/_-~|-   |\\   \\        _/~
+     _-~~     .=~    |  \\-_    '-~7  /-   /  ||    \      /
+   .~       .~       |   \\ -_    /  /-   /   ||      \   /
+  /  ____  /         |     \\ ~-_/  /|- _/   .||       \ /
+  |~~    ~~|--~~~~--_ \     ~==-/   | \~--===~~        .\
+           '         ~-|      /|    |-~\~~       __--~~
+                       |-~~-_/ |    |   ~\_   _-~            /\
+                            /  \     \__   \/~                \__
+                        _--~ _/ | .-~~____--~-/                  ~~==.
+                       ((->/~   '.|||' -_|    ~~-/ ,              . _||
+                                  -_     ~\      ~~---l__i__i__i--~~_/
+                                  _-~-__   ~)  \--______________--~~
+                                //.-~~~-~_--~- |-------~~~~~~~~
+                                       //.-~~~--\
+                                神兽保佑
+                               代码无BUG!
+LOGO;
+        echo PHP_EOL;
     }
 }
