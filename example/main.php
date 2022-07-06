@@ -2,20 +2,10 @@
 
 require "./../vendor/autoload.php";
 
-class RecoveryMiddleware implements \Zorro\HandleInterface{
-    public function handle(\Zorro\Context $context){
-        try {
-            $context->next();
-        } catch (Exception $e) {
-            $context->abortJson(400, ["error" => $e->getMessage()]);
-        }
-    }
-}
-
 $zorror = new \Zorro\Zorro();
 $zorror->scanDir([__DIR__], ["Example"]);
 
-$zorror->Use(new RecoveryMiddleware());
+$zorror->Use(new \Example\RecoveryMiddleware());
 
 $zorror->Get("/order/detail", [\Example\Handler\Order::class, "detail"]);
 
