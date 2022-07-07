@@ -1,5 +1,13 @@
 {
     "name": "hhaojin/zorro",
+    "type": "project",
+    "keywords": [
+        "php",
+        "swoole",
+        "zorro"
+    ],
+    "license": "Apache-2.0",
+    "description": "High performance AOP and Coroutine PHP Framework",
     "authors": [
         {
             "name": "hhaojin",
