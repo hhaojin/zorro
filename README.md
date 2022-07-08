@@ -8,13 +8,14 @@ composer require hhaojin/zorro
 
 ## quick start
 ```php
+<?php
 require "./vendor/autoload.php";
 
 $zorror = new \Zorro\Zorro();
-//扫描指定命名空间下的注解，依赖注入，切面处理
-$zorror->scanDir([__DIR__], ["Example"]); 
+$zorror->scanDir([__DIR__], ["Example"]); //扫描指定命名空间下的注解，依赖注入，切面处理
 
 $zorror->Use(new \Example\RecoveryMiddleware()); //全局中间件捕获异常
+
 $orderGroup := $zorror->Group("/order"); //分组路由 
 {
     //curl http://localhost:8080/order/detail?order_id=1
@@ -29,6 +30,7 @@ $zorror->Post("/test/{name}", function (\Zorro\Context $context) {
     if ($context->getParam("name") == "exception") {
         throw new Exception("xxx"); //如果参数是exception, 则抛出异常，由全局中间件捕获
     }
+    
     var_dump($context->getParam("name"), $requestParam->order_id);
     $context->json(200, ["hello" => $context->getParam("name")]); //使用json响应
 });
