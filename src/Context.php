@@ -18,8 +18,8 @@ use Zorro\Serialize\Yaml;
 
 class Context
 {
-    /** @var */
-    protected $request;
+    /** @var RequsetInterface */
+    public $request;
 
     /** @var ResponseInterface */
     public $response;
@@ -224,4 +224,11 @@ class Context
         $this->response->write(Yaml::Marshal($body));
     }
 
+    public function reset()
+    {
+        $this->params = null;
+        $this->datas = null;
+        $this->handles = null;
+        $this->index = -1;
+    }
 }

@@ -13,7 +13,7 @@ namespace Zorro\Http;
 class Response implements ResponseInterface
 {
     /** @var \Swoole\Http\Response */
-    protected $response;
+    public $response;
 
     /** @var int */
     protected $statusCode = 0;
@@ -24,7 +24,7 @@ class Response implements ResponseInterface
     /** @var string */
     protected $body = "";
 
-    public function __construct($response)
+    public function __construct($response = null)
     {
         $this->response = $response;
     }

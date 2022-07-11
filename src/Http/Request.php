@@ -13,9 +13,9 @@ namespace Zorro\Http;
 class Request implements RequsetInterface
 {
     /** @var \Swoole\Http\Request */
-    protected $request;
+    public $request;
 
-    public function __construct(\Swoole\Http\Request $request)
+    public function __construct($request = null)
     {
         $this->request = $request;
     }

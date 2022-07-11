@@ -16,16 +16,24 @@ use Zorro\Attribute\Collector\AttributeCollector;
 use Zorro\Http\Request as HttpRequest;
 use Zorro\Http\Response as HttpResponse;
 use Zorro\Serialize\Serializer;
+use Zorro\Sync\Pool;
 
 class Zorro extends RouteGroup
 {
     /** @var Dispatcher */
     protected $dispatcher;
 
+    protected $pool;
+
     public function __construct()
     {
         BeanFactory::_init();
         Serializer::init();
+        $this->pool = new Pool();
+        $this->pool->new = function () {
+            $ctx = new Context(new HttpRequest(), new HttpResponse());
+            return $ctx;
+        };
     }
 
     public function Run(int $port = 80, string $host = "0.0.0.0"): void
@@ -75,8 +83,15 @@ class Zorro extends RouteGroup
 
     public function serveHttp(Request $request, Response $response): void
     {
-        $context = new Context(new HttpRequest($request), new HttpResponse($response));
+        $node = $this->pool->get();
+        /** @var Context $context */
+        $context = $node->val;
+        $context->request->request = $request;
+        $context->response->response = $response;
         $this->handleRequest($context);
+
+        $node->val->reset();
+        $this->pool->put($node);
     }
 
     public function dispatch(string $method, string $uri): array
