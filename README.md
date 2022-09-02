@@ -7,7 +7,7 @@ composer require hhaojin/zorro
 ```
 
 ## quick start
-### 一、路由
+### 1、路由
 ```php
 <?php
 require "./vendor/autoload.php";
@@ -22,8 +22,7 @@ $zorror->Post("/test/{name}", function (\Zorro\Context $context) {
 $zorror->Run(8080); //启动服务， 监听8080端口
 ```
 
-### 二、路由分组
-1、定义注解处理类
+### 2、路由分组
 ```php
 <?php
 require "./vendor/autoload.php";
@@ -40,8 +39,7 @@ $orderGroup := $zorror->Group("/order"); //分组路由
 
 ```
 
-### 三、参数绑定
-1、定义注解处理类
+### 3、参数绑定
 ```php
 <?php
 require "./vendor/autoload.php";
