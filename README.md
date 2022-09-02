@@ -13,11 +13,9 @@ composer require hhaojin/zorro
 require "./vendor/autoload.php";
 
 $zorror = new \Zorro\Zorro();
-$zorror->scanDir([__DIR__], ["Example"]); //扫描指定命名空间下的注解，依赖注入，切面处理
 
 //注册路由， curl -x POST http://localhost:8080/test/xxx -d '{"order_id": "world"}'
 $zorror->Post("/test/{name}", function (\Zorro\Context $context) {
-
     $context->json(200, ["hello" => "world"]); //使用json响应
 });
 
@@ -49,6 +47,7 @@ $orderGroup := $zorror->Group("/order"); //分组路由
 require "./vendor/autoload.php";
 
 $zorror = new \Zorro\Zorro();
+$zorror->scanDir([__DIR__], ["Example"]); //扫描指定命名空间下的注解，依赖注入，切面处理
 
 //注册路由， curl -x POST http://localhost:8080/test/xxx -d '{"order_id": 123}'
 $zorror->Post("/test/{name}", function (\Zorro\Context $context) {
