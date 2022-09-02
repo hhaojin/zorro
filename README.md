@@ -7,6 +7,7 @@ composer require hhaojin/zorro
 ```
 
 ## quick start
+### 一、路由
 ```php
 <?php
 require "./vendor/autoload.php";
@@ -14,7 +15,24 @@ require "./vendor/autoload.php";
 $zorror = new \Zorro\Zorro();
 $zorror->scanDir([__DIR__], ["Example"]); //扫描指定命名空间下的注解，依赖注入，切面处理
 
-$zorror->Use(new \Example\RecoveryMiddleware()); //全局中间件捕获异常
+//注册路由， curl -x POST http://localhost:8080/test/xxx -d '{"order_id": "world"}'
+$zorror->Post("/test/{name}", function (\Zorro\Context $context) {
+
+    $context->json(200, ["hello" => "world"]); //使用json响应
+});
+
+$zorror->Run(8080); //启动服务， 监听8080端口
+```
+
+### 二、路由分组
+1、定义注解处理类
+```php
+<?php
+require "./vendor/autoload.php";
+
+$zorror = new \Zorro\Zorro();
+
+$zorror->Use(new \Example\RecoveryMiddleware()); //全局中间件
 
 $orderGroup := $zorror->Group("/order"); //分组路由 
 {
@@ -22,21 +40,28 @@ $orderGroup := $zorror->Group("/order"); //分组路由
     $orderGroup->Get("/detail", [\Example\Handler\Order::class, "detail"]); 
 }
 
+```
+
+### 三、参数绑定
+1、定义注解处理类
+```php
+<?php
+require "./vendor/autoload.php";
+
+$zorror = new \Zorro\Zorro();
+
 //注册路由， curl -x POST http://localhost:8080/test/xxx -d '{"order_id": 123}'
 $zorror->Post("/test/{name}", function (\Zorro\Context $context) {
     //对body里面的参数进行校验，并映射到实体里
     /**@var \Example\Handler\OrderDeatilReq $requestParam */
     $requestParam := $context->bindJson(\Example\Handler\OrderDeatilReq::class) 
-    if ($context->getParam("name") == "exception") {
-        throw new Exception("xxx"); //如果参数是exception, 则抛出异常，由全局中间件捕获
-    }
-    
-    var_dump($context->getParam("name"), $requestParam->order_id);
-    $context->json(200, ["hello" => $context->getParam("name")]); //使用json响应
+
+    $context->json(200, ["order_id" => $requestParam->order_id)]); //使用json响应
 });
 
-$zorror->Run(8080); //启动服务， 监听8080端口
 ```
+
+
 ## 一、自定义注解
 1、定义注解处理类
 ```php
