@@ -1,3 +1,4 @@
+[![OSCS Status](https://www.oscs1024.com/platform/badge/hhaojin/zorro.svg?size=small)](https://www.oscs1024.com/project/hhaojin/zorro?ref=badge_small)
 # Zorro
 zorro是一款轻量灵活的高性能http框架，支持路由分组，中间件，自定义注解，自定义验证器，参数绑定.
 
