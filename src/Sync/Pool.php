@@ -6,67 +6,55 @@
  * Time: 19:42
  */
 
-
 namespace Zorro\Sync;
-
-
-use Swoole\Timer;
 
 class Pool
 {
-    /** @var ListNode */
-    protected $head;
-
-    /** @var ListNode */
-    protected $tail;
-
-    protected $size = 0;
+    /**
+     * @var \SplQueue
+     */
+    protected $queue;
 
     /** @var \Closure */
     public $new;
 
     protected $idleTime = 60;
 
-    public function __construct()
+    public function __construct(\Closure $fn)
     {
-        $this->head = new ListNode();
-        Timer::tick(60 * 1000, [$this, "relase"], $this->head);
+        $this->queue = new \SplQueue();
+        $this->new = $fn;
     }
 
-    private function relase(ListNode $head)
+    public function get(): \StdClass
     {
-        $t = time();
-        while (($n = $head->next) !== null) {
-            if ($t - $n->time < $this->idleTime) {
-                break;
+        $now = time();
+        if (!$this->queue->isEmpty()) {
+            $ele = $this->queue->dequeue();
+            if (($now - $ele->t) > $this->idleTime && !$this->queue->isEmpty()) {
+                return $this->queue->dequeue();
             }
-            $this->head->next();
+            return $ele;
         }
+        return $this->gen();
     }
 
-    public function get()
+    public function put(\StdClass $ele)
     {
-        if ($this->size > 0) {
-            $node = $this->head->next;
-            $this->head->next();
-            $this->size--;
-            return $node;
+        $now = time();
+        if (($now - $ele->t) > $this->idleTime) {
+            return;
         }
-        $node = new ListNode();
-        $node->val = ($this->new)();
-        return $node;
+        $ele->t = $now;
+        $this->queue->enqueue($ele);
     }
 
-    public function put(ListNode $node)
+    protected function gen(): \StdClass
     {
-        $node->time = time();
-        if ($this->size > 0) {
-            $this->tail->push($node);
-            $this->tail = $this->tail->next;
-        } else {
-            $this->head->push($node);
-            $this->tail = $node;
-        }
-        $this->size++;
+        $ctx = ($this->new)();
+        $c = new \StdClass();
+        $c->val = $ctx;
+        $c->t = time();
+        return $c;
     }
 }

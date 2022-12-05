@@ -16,11 +16,10 @@ class PoolTest extends TestCase
 
     public function testPut()
     {
-        $p = new Pool();
-        $a = 1;
-        $p->new = function () use (&$a) {
+        $p = new Pool(function () use (&$a) {
             return $a++;
-        };
+        });
+        $a = 1;
         $arr = [];
         for ($i = 0; $i < 10; $i++) {
             $node = $p->get();
@@ -52,11 +51,10 @@ class PoolTest extends TestCase
 
     public function testGet()
     {
-        $p = new Pool();
-        $a = 1;
-        $p->new = function () use (&$a) {
+        $p = new Pool(function () use (&$a) {
             return $a++;
-        };
+        });
+        $a = 1;
         for ($i = 0; $i < 10; $i++) {
             $node = $p->get();
             $this->assertEquals($i + 1, $node->val);

@@ -29,11 +29,10 @@ class Zorro extends RouteGroup
     {
         BeanFactory::_init();
         Serializer::init();
-        $this->pool = new Pool();
-        $this->pool->new = function () {
+        $this->pool = new Pool(function (): Context {
             $ctx = new Context(new HttpRequest(), new HttpResponse());
             return $ctx;
-        };
+        });
     }
 
     public function Run(int $port = 80, string $host = "0.0.0.0"): void
