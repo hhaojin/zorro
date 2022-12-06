@@ -4,11 +4,11 @@ namespace Example\Handler;
 
 use example\CustomAttribute\TestLog;
 use Zorro\Context;
-use Zorro\Validation\Between;
+use Zorro\Validation\Validate;
 
 class OrderDeatilReq
 {
-    #[Between(1, 99, "orderid 必须大于0小于99")]
+    #[Validate("between=50,100")]
     public $order_id;
 }
 

@@ -1,8 +1,9 @@
 <?php
 
-namespace Zorro\Attribute;
+namespace Zorro\Attribute\Collector;
 
 use ReflectionAttribute;
+use Zorro\Attribute\CustomAttribute;
 
 class AttributeHandler
 {

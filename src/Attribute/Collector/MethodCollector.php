@@ -6,31 +6,18 @@ use Attribute;
 use ReflectionAttribute;
 use ReflectionMethod;
 use Zorro\Aspect\Aspect;
-use Zorro\Attribute\AttributeHandler;
-use Zorro\Attribute\CustomAttribute;
 use Zorro\Attribute\CustomAttributeInterface;
 use Zorro\BeanFactory;
 
-class MethodAttributeCollector
+class MethodCollector extends CollectorAbstract
 {
-    protected static function shouldHandle(ReflectionAttribute $attr): bool
-    {
-        $name = $attr->getName();
-        if ($name === CustomAttribute::class) {
-            return false;
-        }
-        if ($name === Attribute::class) {
-            return false;
-        }
-        return true;
-    }
 
     /**
      * @param ReflectionMethod $rf
      * @param object $instance
      * @return void
      */
-    public static function collect(ReflectionMethod $rf, object $bean): void
+    public static function collect($rf, $bean): void
     {
         foreach ($rf->getAttributes() as $attr) {
             if (!self::shouldHandle($attr)) {
@@ -47,6 +34,9 @@ class MethodAttributeCollector
         $handlerName = AttributeHandler::$handler[$attr->getName()];
         $handler = BeanFactory::getBean($handlerName);
         if (!$handler instanceof CustomAttributeInterface) {
+            return;
+        }
+        if ($attr->getTarget() & Attribute::TARGET_METHOD !== Attribute::TARGET_METHOD) {
             return;
         }
         $fn = $handler->handle($rf, $instance, $attr);

@@ -10,11 +10,9 @@
 namespace Zorro\Serialize;
 
 use PHPUnit\Framework\TestCase;
-use Symfony\Component\Serializer\Encoder\JsonEncoder;
-use Symfony\Component\Serializer\Encoder\XmlEncoder;
-use Symfony\Component\Serializer\Encoder\YamlEncoder;
-use Zorro\Serialize\Mapper\Mapper;
-use Zorro\Validation\Eq;
+use Zorro\Attribute\AttributeCollector;
+use Zorro\BeanFactory;
+use Zorro\Validation\Validate;
 
 class Address
 {
@@ -23,7 +21,7 @@ class Address
 
 class Person
 {
-    #[Eq(19)]
+    #[Validate("gt=19")]
     public $age;
     public $name;
     /** @var Address */
@@ -36,10 +34,7 @@ class SerializerTest extends TestCase
     public function testJsonUnmarshal_Obejct()
     {
         $jsonContent = '{"age":19,"name":"foo","address":{"city":"xx"}}';
-        $parser = new Parser([], [new JsonEncoder()]);
-        $mapper = new Mapper();
-        $s = new Serializer($mapper, $parser);
-        $person = $s->jsonUnmarshal($jsonContent, Person::class);
+        $person = Json::Unmarshal($jsonContent, Person::class);
         $this->assertEquals(19, $person->age);
         $this->assertEquals("foo", $person->name);
         $this->assertEquals("xx", $person->address->city);
@@ -48,10 +43,7 @@ class SerializerTest extends TestCase
     public function testJsonUnmarshal_Obejcts()
     {
         $jsonContent = '[{"age":19,"name":"foo","address":{"city":"xx"}}]';
-        $parser = new Parser([], [new JsonEncoder()]);
-        $mapper = new Mapper();
-        $s = new Serializer($mapper, $parser);
-        $person = $s->jsonUnmarshal($jsonContent, Person::class);
+        $person = Json::Unmarshal($jsonContent, Person::class);
         $this->assertEquals(19, $person[0]->age);
         $this->assertEquals("foo", $person[0]->name);
         $this->assertEquals("xx", $person[0]->address->city);
@@ -69,10 +61,7 @@ class SerializerTest extends TestCase
   address:
     city: oo    
 Yaml;
-        $parser = new Parser([], [new YamlEncoder()]);
-        $mapper = new Mapper();
-        $s = new Serializer($mapper, $parser);
-        $person = $s->yamlUnmarshal($str, Person::class);
+        $person = Yaml::Unmarshal($str, Person::class);
         $this->assertEquals(19, $person[0]->age);
         $this->assertEquals("foo", $person[0]->name);
         $this->assertEquals("xx", $person[0]->address->city);
@@ -92,10 +81,7 @@ Yaml;
 </address>
 </person>
 XML;
-        $parser = new Parser([], [new XmlEncoder()]);
-        $mapper = new Mapper();
-        $s = new Serializer($mapper, $parser);
-        $person = $s->xmlUnmarshal($xmlstr, Person::class);
+        $person = Xml::Unmarshal($xmlstr, Person::class);
         $this->assertEquals(19, $person->age);
         $this->assertEquals("foo", $person->name);
         $this->assertEquals("xx", $person->address->city);

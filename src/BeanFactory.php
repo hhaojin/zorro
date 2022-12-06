@@ -10,16 +10,19 @@ class BeanFactory
     /** @var Container */
     public static $container;
 
-    public static function _init()
+    public static function create()
     {
-        $builder = new ContainerBuilder();
-        self::$container = $builder->build();
+        if (self::$container === null) {
+            $builder = new ContainerBuilder();
+            self::$container = $builder->build();
+        }
+        return self::$container;
     }
 
     public static function getBean($beanName)
     {
         try {
-            return self::$container->get($beanName);
+            return self::create()->get($beanName);
         } catch (\Exception $e) {
             var_dump($e->getMessage());
             return false;
@@ -28,17 +31,17 @@ class BeanFactory
 
     public static function hasBean($beanName)
     {
-        return self::$container->has($beanName);
+        return self::create()->has($beanName);
     }
 
     public static function make($beanName)
     {
-        return self::$container->make($beanName);
+        return self::create()->make($beanName);
     }
 
     public static function setBean($beanName, $bean)
     {
-        self::$container->set($beanName, $bean);
+        self::create()->set($beanName, $bean);
     }
 
 }

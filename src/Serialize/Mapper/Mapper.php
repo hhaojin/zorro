@@ -10,9 +10,6 @@
 namespace Zorro\Serialize\Mapper;
 
 
-use ReflectionProperty;
-use Zorro\Validation\ValidatorAbstract;
-
 class Mapper extends \JsonMapper implements MapperInterface
 {
     public $bEnforceMapType = false;
@@ -36,33 +33,6 @@ class Mapper extends \JsonMapper implements MapperInterface
             return $this->map($data, new $dest());
         }
         throw new MapperException("class {$dest} not exists");
-    }
-
-    protected function setProperty($object, $accessor, $value)
-    {
-        if (!$accessor->isPublic() && $this->bIgnoreVisibility) {
-            $accessor->setAccessible(true);
-        }
-        if ($accessor instanceof ReflectionProperty) {
-            //handle validate, if pass then set value, else throw exception
-            $this->validate($accessor, $value);
-            $accessor->setValue($object, $value);
-        } else {
-            //setter method
-            $accessor->invoke($object, $value);
-        }
-    }
-
-    public function validate(ReflectionProperty $property, $value)
-    {
-        $name = $property->getName();
-        foreach ($property->getAttributes() as $attribute) {
-            $instace = $attribute->newInstance();
-            if (!$instace instanceof ValidatorAbstract) {
-                continue;
-            }
-            $instace->validate($name, $value);
-        }
     }
 
 }

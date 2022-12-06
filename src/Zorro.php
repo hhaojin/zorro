@@ -12,10 +12,9 @@ use FastRoute\Dispatcher\GroupCountBased as Dispatcher;
 use Swoole\Http\Request;
 use Swoole\Http\Response;
 use Swoole\Http\Server;
-use Zorro\Attribute\Collector\AttributeCollector;
+use Zorro\Attribute\AttributeCollector;
 use Zorro\Http\Request as HttpRequest;
 use Zorro\Http\Response as HttpResponse;
-use Zorro\Serialize\Serializer;
 use Zorro\Sync\Pool;
 
 class Zorro extends RouteGroup
@@ -27,15 +26,13 @@ class Zorro extends RouteGroup
 
     public function __construct()
     {
-        BeanFactory::_init();
-        Serializer::init();
         $this->pool = new Pool(function (): Context {
             $ctx = new Context(new HttpRequest(), new HttpResponse());
             return $ctx;
         });
     }
 
-    public function Run(int $port = 80, string $host = "0.0.0.0"): void
+    public function Run(int $port = 8081, string $host = "0.0.0.0"): void
     {
         $this->echoLogo();
         $this->initDispatcher();

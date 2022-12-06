@@ -137,7 +137,7 @@ class Context
 
     public function bindQuery(string $dest)
     {
-        return Json::$mapper->Unmarsharl($this->getQuerys(), $dest);
+        return Json::mapping($this->getQuerys(), $dest);
     }
 
     public function next(): void
