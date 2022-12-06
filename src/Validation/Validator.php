@@ -9,6 +9,8 @@
 
 namespace Zorro\Validation;
 
+use Zorro\Attribute\AttributeCollector;
+
 class Validator
 {
     /**
@@ -57,7 +59,7 @@ class Validator
     private function check($input)
     {
         $rf = new \ReflectionClass($input);
-        $classRules = self::$ruleCache[$rf->getName()];
+        $classRules = $this->getRuleCache($rf, $input);
         if ($classRules === null) {
             return;
         }
@@ -71,6 +73,20 @@ class Validator
                 }
             }
         }
+    }
+
+    private function getRuleCache(\ReflectionClass $rf, object $bean)
+    {
+        $name = $rf->getName();
+        if (isset(self::$ruleCache[$name])) {
+            return self::$ruleCache[$name];
+        }
+        AttributeCollector::collectAttribute($rf, $bean);
+        if (isset(self::$ruleCache[$name])) {
+            return self::$ruleCache[$name];
+        }
+        self::$ruleCache[$name] = null;
+        return null;
     }
 
     public static function addCache(string $className, string $propertyName, array $tags)

@@ -46,7 +46,6 @@ $orderGroup := $zorror->Group("/order"); //分组路由
 require "./vendor/autoload.php";
 
 $zorror = new \Zorro\Zorro();
-$zorror->scanDir([__DIR__], ["Example"]); //扫描指定命名空间下的注解，依赖注入，切面处理
 
 //注册路由， curl -x POST http://localhost:8080/test/xxx -d '{"order_id": 123}'
 $zorror->Post("/test/{name}", function (\Zorro\Context $context) {
@@ -116,38 +115,17 @@ after -> prodList
  * /
 ```
 
-## 二、自定义验证器
-1、自定义注解名称，以及验证规则
-```php
-use Zorro\Validation\ValidatorAbstract
+## 二、验证器
+1、使用
 
-#[Attribute(Attribute::TARGET_PROPERTY)]
-class Between extends ValidatorAbstract
-{
-    protected $min;
-    protected $max;
-    //判断数值是否在某个区间，message是自定义提示
-    public function __construct(int $min, int $max, string $message = null)
-    {
-        $this->min = $min;
-        $this->max = $max;
-        $this->message = $message;
-    }
-
-    function check(string $name, $value): bool
-    {
-        return Validator::between($this->min, $this->max)->validate($value);
-    }
-}
-```
-2、使用
 ```php
 
 class OrderDeatilReq
 {
-    #[Between(1, 99, "orderid 必须大于0小于99")]
+    #[\Zorro\Validation\Validate("intType;between=50,100;")]
     public $order_id;
 }
+//在控制器中直接使用bind方法, order_id必须是数字,并且50<= order_id <=100
 /**@var \Zorro\Context $context*/
 $req = $context->bindJson(OrderDeatilReq::class);
 var_dump($req);

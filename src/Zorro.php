@@ -82,11 +82,10 @@ class Zorro extends RouteGroup
         $node = $this->pool->get();
         /** @var Context $context */
         $context = $node->val;
+        $context->reset();
         $context->request->request = $request;
         $context->response->response = $response;
         $this->handleRequest($context);
-
-        $node->val->reset();
         $this->pool->put($node);
     }
 

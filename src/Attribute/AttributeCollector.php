@@ -25,7 +25,7 @@ class AttributeCollector
         self::$collected = null;
     }
 
-    protected static function collectAttribute(ReflectionClass $rf, $instance)
+    public static function collectAttribute(ReflectionClass $rf, $instance)
     {
         $instanceName = get_class($instance);
         if (isset(self::$collected[$instanceName])) {

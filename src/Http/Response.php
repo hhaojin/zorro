@@ -64,5 +64,8 @@ class Response implements ResponseInterface
             $this->response->write($this->body);
         }
         $this->response->end();
+        $this->body = "";
+        $this->responseHeader = [];
+        $this->statusCode = 0;
     }
 }

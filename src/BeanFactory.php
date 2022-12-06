@@ -4,6 +4,7 @@ namespace Zorro;
 
 use DI\Container;
 use DI\ContainerBuilder;
+use Zorro\Attribute\AttributeCollector;
 
 class BeanFactory
 {
@@ -22,10 +23,15 @@ class BeanFactory
     public static function getBean($beanName)
     {
         try {
+            if (!self::hasBean($beanName)) {
+
+                $bean = BeanFactory::make($beanName);
+                $rf = new \ReflectionClass($bean);
+                AttributeCollector::collectAttribute($rf, $bean);
+            }
             return self::create()->get($beanName);
-        } catch (\Exception $e) {
-            var_dump($e->getMessage());
-            return false;
+        } catch (\Exception) {
+            return null;
         }
     }
 
