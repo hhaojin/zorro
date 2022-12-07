@@ -78,11 +78,11 @@ class Validator
     private function getRuleCache(\ReflectionClass $rf, object $bean)
     {
         $name = $rf->getName();
-        if (isset(self::$ruleCache[$name])) {
+        if (array_key_exists($name, self::$ruleCache)) {
             return self::$ruleCache[$name];
         }
         AttributeCollector::collectAttribute($rf, $bean);
-        if (isset(self::$ruleCache[$name])) {
+        if (array_key_exists($name, self::$ruleCache)) {
             return self::$ruleCache[$name];
         }
         self::$ruleCache[$name] = null;

@@ -70,13 +70,6 @@ class Zorro extends RouteGroup
         }
     }
 
-    public function scanDir(array $dirs, array $namespaces): void
-    {
-        FileLoader::loadDirFiles(...$dirs);
-        $classes = get_declared_classes();
-        AttributeCollector::collectAttributes($classes, $namespaces);
-    }
-
     public function serveHttp(Request $request, Response $response): void
     {
         $node = $this->pool->get();

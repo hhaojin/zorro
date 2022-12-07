@@ -9,7 +9,7 @@
 
 namespace Example\Handler;
 
-use example\CustomAttribute\TestLog;
+use Example\CustomAttribute\TestLog;
 
 class OrderProduct
 {

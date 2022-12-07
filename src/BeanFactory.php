@@ -9,7 +9,9 @@ use Zorro\Attribute\AttributeCollector;
 class BeanFactory
 {
     /** @var Container */
-    public static $container;
+    protected static $container;
+
+    protected static $resolved = [];
 
     public static function create()
     {
@@ -23,8 +25,7 @@ class BeanFactory
     public static function getBean($beanName)
     {
         try {
-            if (!self::hasBean($beanName)) {
-
+            if (!array_key_exists($beanName, self::$resolved)) {
                 $bean = BeanFactory::make($beanName);
                 $rf = new \ReflectionClass($bean);
                 AttributeCollector::collectAttribute($rf, $bean);
@@ -48,6 +49,7 @@ class BeanFactory
     public static function setBean($beanName, $bean)
     {
         self::create()->set($beanName, $bean);
+        self::$resolved[$beanName] = null;
     }
 
 }

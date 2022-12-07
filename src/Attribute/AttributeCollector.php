@@ -12,25 +12,14 @@ class AttributeCollector
 {
     private static $collected = [];
 
-    public static function collectAttributes(array $classes, array $namespaces)
-    {
-        foreach ($classes as $class) {
-            if (!self::shouldCollect($class, $namespaces)) {
-                continue;
-            }
-            $bean = BeanFactory::make($class);
-            $rf = new ReflectionClass($bean);
-            self::collectAttribute($rf, $bean);
-        }
-        self::$collected = null;
-    }
-
     public static function collectAttribute(ReflectionClass $rf, $instance)
     {
         $instanceName = get_class($instance);
         if (isset(self::$collected[$instanceName])) {
             return;
         }
+
+        //处理属性注解
         $properties = $rf->getProperties();
         foreach ($properties as $property) {  //先递归处理属性类
             $propertyVal = $property->getValue($instance);
@@ -47,22 +36,17 @@ class AttributeCollector
             }
         }
         BeanFactory::setBean($instanceName, $instance);
+
+        //处理方法注解
         $methods = $rf->getMethods();
         foreach ($methods as $method) {
             $bean = BeanFactory::getBean($instanceName);
             MethodCollector::collect($method, $bean);
         }
+
+        //处理类注解
         ClassCollector::collect($rf, $instance);
         self::$collected[$instanceName] = true;
     }
 
-    protected static function shouldCollect($class, $namespaces): bool
-    {
-        foreach ($namespaces as $namespace) {
-            if (strstr($class, $namespace)) {
-                return true;
-            }
-        }
-        return false;
-    }
 }

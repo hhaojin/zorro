@@ -47,14 +47,15 @@ class RouteGroup
                         $handles = $routeGroup->getHandles();
                         if (is_callable($handle)) {
                             $handles[] = $handle;
+                        } elseif (is_array($handle) && BeanFactory::hasBean($handle[0])) {
+                            $handle[0] = BeanFactory::getBean($handle[0]);
+                            if (is_callable($handle)) {
+                                $handles[] = $handle;
+                            }
                         }
-                        if (is_array($handle) && count($handle) == 2 && BeanFactory::hasBean($handle[0])) {
-                            $handles[] = function (Context $context) use ($handle) {
-                                $bean = BeanFactory::getBean($handle[0]);
-                                call_user_func([$bean, $handle[1]], $context);
-                            };
+                        if (count($handles) > 0) {
+                            $r->addRoute($method, $path, $handles);
                         }
-                        $r->addRoute($method, $path, $handles);
                     }
                 }
                 $this->collectRouteGroup($collector, $routeGroup->getGroups());
@@ -110,7 +111,7 @@ class RouteGroup
      */
     public function Get(string $path, $handle): void
     {
-        $this->routes["GET"][$path] = $handle;
+        $this->addRoute("GET", $path, $handle);
     }
 
     /**
@@ -120,7 +121,7 @@ class RouteGroup
      */
     public function Post(string $path, $handle): void
     {
-        $this->routes["POST"][$path] = $handle;
+        $this->addRoute("POST", $path, $handle);
     }
 
     /**
@@ -130,7 +131,7 @@ class RouteGroup
      */
     public function Put(string $path, $handle): void
     {
-        $this->routes["PUT"][$path] = $handle;
+        $this->addRoute("PUT", $path, $handle);
     }
 
     /**
@@ -140,7 +141,7 @@ class RouteGroup
      */
     public function Delete(string $path, $handle): void
     {
-        $this->routes["DELETE"][$path] = $handle;
+        $this->addRoute("DELETE", $path, $handle);
     }
 
     /**
@@ -150,7 +151,7 @@ class RouteGroup
      */
     public function Patch(string $path, $handle): void
     {
-        $this->routes["PATCH"][$path] = $handle;
+        $this->addRoute("PATCH", $path, $handle);
     }
 
     /**
@@ -160,7 +161,11 @@ class RouteGroup
      */
     public function Head(string $path, $handle): void
     {
-        $this->routes["HEAD"][$path] = $handle;
+        $this->addRoute("HEAD", $path, $handle);
     }
 
+    public function addRoute(string $method, string $path, $handle)
+    {
+        $this->routes[$method][$path] = $handle;
+    }
 }
