@@ -12,7 +12,7 @@ namespace Zorro\Http;
 
 class Header
 {
-    const ContentType = "content-type";
+    const ContentType = "Content-Type";
 
     const ContentTypeText = "text/plain";
     const ContentTypeHtml = "text/html";
