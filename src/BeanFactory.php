@@ -24,16 +24,12 @@ class BeanFactory
 
     public static function getBean($beanName)
     {
-        try {
-            if (!array_key_exists($beanName, self::$resolved)) {
-                $bean = BeanFactory::make($beanName);
-                $rf = new \ReflectionClass($bean);
-                AttributeCollector::collectAttribute($rf, $bean);
-            }
-            return self::create()->get($beanName);
-        } catch (\Exception) {
-            return null;
+        if (!array_key_exists($beanName, self::$resolved)) {
+            $bean = BeanFactory::make($beanName);
+            $rf = new \ReflectionClass($bean);
+            AttributeCollector::collectAttribute($rf, $bean);
         }
+        return self::create()->get($beanName);
     }
 
     public static function hasBean($beanName)

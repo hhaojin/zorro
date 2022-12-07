@@ -26,7 +26,9 @@ class ValidateHandler implements CustomAttributeInterface
         /** @var $attrInstance Validate */
         $attrInstance = $attribute->newInstance();
         $rf = new \ReflectionClass($attrInstance);
-        $tag = $rf->getProperty("tag")->getValue($attrInstance);
+        $property = $rf->getProperty("tag");
+        $property->setAccessible(true);
+        $tag = $property->getValue($attrInstance);
         $tags = explode(";", $tag);
 
         $rules = [];

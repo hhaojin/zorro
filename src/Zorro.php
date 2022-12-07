@@ -9,12 +9,9 @@
 namespace Zorro;
 
 use FastRoute\Dispatcher\GroupCountBased as Dispatcher;
-use Swoole\Http\Request;
-use Swoole\Http\Response;
-use Swoole\Http\Server;
-use Zorro\Attribute\AttributeCollector;
-use Zorro\Http\Request as HttpRequest;
-use Zorro\Http\Response as HttpResponse;
+use Zorro\Http\RequsetInterface;
+use Zorro\Http\ResponseInterface;
+use Zorro\Http\Server\WorkerManAdapter;
 use Zorro\Sync\Pool;
 
 class Zorro extends RouteGroup
@@ -27,7 +24,7 @@ class Zorro extends RouteGroup
     public function __construct()
     {
         $this->pool = new Pool(function (): Context {
-            $ctx = new Context(new HttpRequest(), new HttpResponse());
+            $ctx = new Context();
             return $ctx;
         });
     }
@@ -36,21 +33,11 @@ class Zorro extends RouteGroup
     {
         $this->echoLogo();
         $this->initDispatcher();
-        $server = new Server($host, $port);
-        $server->on("request", [$this, "serveHttp"]);
-        $server->on("start", function () {
-            cli_set_process_title("zorro_master");
-        });
-        $server->on("workerStart", function (\Swoole\Server $server, int $workerId) {
-            cli_set_process_title("zorro_worker" . $workerId);
-        });
-        $server->on("managerStart", function () {
-            cli_set_process_title("zorro_manager");
-        });
-        $server->start();
+        $server = new WorkerManAdapter($this);
+        $server->start($port, $host);
     }
 
-    public function initDispatcher(): void
+    protected function initDispatcher(): void
     {
         $handles = $this->handles();
         $this->printHandles($handles);
@@ -70,19 +57,20 @@ class Zorro extends RouteGroup
         }
     }
 
-    public function serveHttp(Request $request, Response $response): void
+    public function serveHttp(RequsetInterface $request, ResponseInterface $response): void
     {
         $node = $this->pool->get();
         /** @var Context $context */
         $context = $node->val;
         $context->reset();
-        $context->request->request = $request;
-        $context->response->response = $response;
+        $context->request = $request;
+        $context->response = $response;
+
         $this->handleRequest($context);
         $this->pool->put($node);
     }
 
-    public function dispatch(string $method, string $uri): array
+    protected function dispatch(string $method, string $uri): array
     {
         return $this->dispatcher->dispatch($method, $uri);
     }

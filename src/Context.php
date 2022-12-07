@@ -34,7 +34,7 @@ class Context
 
     protected $index = -1;
 
-    public function __construct(RequsetInterface $req, ResponseInterface $resp)
+    public function __construct(RequsetInterface $req = null, ResponseInterface $resp = null)
     {
         $this->request = $req;
         $this->response = $resp;

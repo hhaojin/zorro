@@ -9,10 +9,11 @@
 
 namespace Zorro\Http;
 
+use Workerman\Connection\TcpConnection;
 
 class Response implements ResponseInterface
 {
-    /** @var \Swoole\Http\Response */
+    /** @var TcpConnection|\Swoole\Http\Response */
     public $response;
 
     /** @var int */
@@ -24,9 +25,9 @@ class Response implements ResponseInterface
     /** @var string */
     protected $body = "";
 
-    public function __construct($response = null)
+    public function __construct($response)
     {
-        $this->response = $response;
+        $this->connect = $response;
     }
 
     public function getStatusCode(): int
@@ -56,14 +57,21 @@ class Response implements ResponseInterface
 
     public function end(): void
     {
-        $this->response->status($this->getStatusCode());
-        foreach ($this->responseHeader as $key => $value) {
-            $this->response->header($key, $value);
+        if ($this->connect instanceof TcpConnection) {
+            $resp = new \Workerman\Protocols\Http\Response(
+                $this->getStatusCode(), $this->responseHeader, $this->body);
+
+            $this->connect->send($resp);
+        } else {
+            $this->connect->status($this->getStatusCode());
+            foreach ($this->responseHeader as $key => $value) {
+                $this->connect->header($key, $value);
+            }
+            if (strlen($this->body) > 0) {
+                $this->connect->write($this->body);
+            }
+            $this->connect->end();
         }
-        if (strlen($this->body) > 0) {
-            $this->response->write($this->body);
-        }
-        $this->response->end();
         $this->body = "";
         $this->responseHeader = [];
         $this->statusCode = 0;

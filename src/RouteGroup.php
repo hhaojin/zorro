@@ -51,6 +51,9 @@ class RouteGroup
                             $handle[0] = BeanFactory::getBean($handle[0]);
                             if (is_callable($handle)) {
                                 $handles[] = $handle;
+                            } else {
+                                throw new \Exception(
+                                    sprintf("route %s -> %s must be callable", $method, $path));
                             }
                         }
                         if (count($handles) > 0) {

@@ -12,60 +12,64 @@ namespace Zorro\Http;
 
 class Request implements RequsetInterface
 {
-    /** @var \Swoole\Http\Request */
-    public $request;
+    public $header = [];
 
-    public function __construct($request = null)
-    {
-        $this->request = $request;
-    }
+    public $query = [];
+
+    public $post = [];
+
+    public $raw = "";
+
+    public $method = "";
+
+    public $uri = "";
 
     public function getHeader(string $key): string
     {
-        if (isset($this->request->header[$key])) {
-            return $this->request->header[$key];
+        if (isset($this->header[$key])) {
+            return $this->header[$key];
         }
         return "";
     }
 
     public function getQuery(string $key): string
     {
-        if (isset($this->request->get[$key])) {
-            return $this->request->get[$key];
+        if (isset($this->query[$key])) {
+            return $this->query[$key];
         }
         return "";
     }
 
     public function getQuerys(): array
     {
-        return $this->request->get;
+        return $this->query;
     }
 
     public function postForm(string $key): string
     {
-        if (isset($this->request->post[$key])) {
-            return $this->request->post[$key];
+        if (isset($this->post[$key])) {
+            return $this->post[$key];
         }
         return "";
     }
 
     public function postForms(): array
     {
-        return $this->request->post;
+        return $this->post;
     }
 
     public function getRawContent(): string
     {
-        return $this->request->rawContent();
+        return $this->raw;
     }
 
     public function getMethod(): string
     {
-        return $this->request->server["request_method"];
+        return $this->method;
     }
 
     public function getUri(): string
     {
-        return $this->request->server["request_uri"];
+        return $this->uri;
     }
 }
