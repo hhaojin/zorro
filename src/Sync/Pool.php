@@ -14,7 +14,7 @@ class Pool
     protected $queue;
 
     /** @var \Closure */
-    public $new;
+    protected $new;
 
     protected $idleTime = 60;
 
