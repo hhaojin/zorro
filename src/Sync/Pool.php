@@ -16,16 +16,18 @@ class Pool
     /** @var \Closure */
     protected $new;
 
+    /** @var int  */
     protected $idleTime = 60;
 
     /** @var int */
     protected $size;
 
-    public function __construct(\Closure $fn, $size = 50)
+    public function __construct(\Closure $fn, $size = 50, $idleTime = 60)
     {
         $this->queue = new \SplQueue();
         $this->new = $fn;
         $this->size = $size;
+        $this->idleTime = $idleTime;
     }
 
     public function get(): PoolElement
