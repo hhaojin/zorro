@@ -9,7 +9,7 @@ use Zorro\Validation\Validate;
 
 class OrderDeatilReq
 {
-    #[Validate("between=50,100")]
+    #[Validate("between=50,100", "order_id不符合要求")]
     public $order_id;
 }
 

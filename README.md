@@ -152,11 +152,11 @@ class EqTag extends Zorro\Validation\CustomTagAbstract
 
 //使用, 匿名类的order_id 属性必须在50-100区间，并且必须等于88
 $obj = new class {
-    #[Validate("between=50,100;eq=88")]
+    #[Validate("between=50,100;eq=88", "order_id 不符合要求")]
     public $order_id = 100;
 };
 
 \Zorro\Validation\Validator::validate($obj);
-// Zorro\Validation\ValidateException: invalid argument, property=order_id, 
+// Zorro\Validation\ValidateException: order_id 不符合要求, property=order_id, 
 // tag=eq in D:\code\program\zorro\src\Validation\Validator.php:78
 ```
