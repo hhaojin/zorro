@@ -10,7 +10,7 @@
 namespace Zorro\Http;
 
 
-class Request implements RequsetInterface
+class Request
 {
     public $header = [];
 

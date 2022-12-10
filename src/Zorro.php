@@ -9,10 +9,9 @@
 namespace Zorro;
 
 use FastRoute\Dispatcher\GroupCountBased as Dispatcher;
-use Zorro\Http\RequsetInterface;
+use Zorro\Http\Request;
 use Zorro\Http\ResponseInterface;
-use Zorro\Http\Server\SwooleAdapter;
-use Zorro\Http\Server\WorkerManAdapter;
+use Zorro\Http\Server\Adapter\Adapter;
 use Zorro\Sync\Pool;
 
 class Zorro extends RouteGroup
@@ -23,19 +22,8 @@ class Zorro extends RouteGroup
     /** @var Pool */
     protected $pool;
 
-    /** @var string */
-    protected $adapter;
-
     public function __construct()
     {
-        $adapter = $_SERVER["argv"][1] ?? "";
-        $arr = explode("=", $adapter);
-        if (count($arr) === 2 && $arr[0] === "ZORRO_SERVER") {
-            $this->adapter = $arr[1];
-        } else {
-            $this->adapter = "workerman";
-        }
-
         $this->pool = new Pool(function (): Context {
             $ctx = new Context();
             return $ctx;
@@ -46,19 +34,7 @@ class Zorro extends RouteGroup
     {
         $this->echoLogo();
         $this->initDispatcher();
-
-        switch ($this->adapter) {
-            case "workerman":
-                $server = new WorkerManAdapter($this);
-                $server->start($port, $host);
-                break;
-            case "swoole":
-                $server = new SwooleAdapter($this);
-                $server->start($port, $host);
-                break;
-            default:
-                throw new \Exception("nonsupport server adapter");
-        }
+        Adapter::Serve($this)->start($port, $host);
     }
 
     protected function initDispatcher(): void
@@ -81,7 +57,7 @@ class Zorro extends RouteGroup
         }
     }
 
-    public function serveHttp(RequsetInterface $request, ResponseInterface $response): void
+    public function serveHttp(Request $request, ResponseInterface $response): void
     {
         $node = $this->pool->get();
         /** @var Context $context */
