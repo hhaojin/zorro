@@ -19,8 +19,11 @@ class Validator
      * [
      *      className => [
      *          propertyName => [
-     *              tag1 => [],
-     *              tag2 => [],
+     *              [
+     *                  tag1 => [],
+     *                  tag2 => [],
+     *              ],
+     *              "notice"
      *          ]
      *      ]
      * ]
@@ -74,7 +77,7 @@ class Validator
                     $ret = self::$respect->__call($ruleName, $value)->validate($fieldValue);
                 }
                 if (!$ret) {
-                    $notice = $value[1] !== "" ? $rules[1] : sprintf("invalid argument, property=%s, tag=%s", $propertyName, $ruleName);
+                    $notice = $rules[1] !== "" ? $rules[1] : sprintf("invalid argument, property=%s, tag=%s", $propertyName, $ruleName);
                     throw new ValidateException($notice);
                 }
             }
@@ -112,10 +115,7 @@ class Validator
         if ($tagName === "") {
             throw new \Exception(sprintf("must declare tag name"));
         }
-        $property = $rf->getProperty("msg");
-        $property->setAccessible(true);
-        $msg = $property->getValue($tag);
-        self::$customRules[$tagName] = [$rf->getMethod("validate")->getClosure($tag), $msg];
+        self::$customRules[$tagName] = $rf->getMethod("validate")->getClosure($tag);
     }
 
 }
