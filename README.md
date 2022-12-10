@@ -135,7 +135,7 @@ var_dump($req);
 ```
 2、自定义规则
 ```php
-class EqTag extends CustomTagAbstract
+class EqTag extends Zorro\Validation\CustomTagAbstract
 {
     protected $tag = "eq";
 
@@ -148,6 +148,7 @@ class EqTag extends CustomTagAbstract
         return false;
     }
 }
+\Zorro\Validation\Validator::registerValidation(new \Example\CustomAttribute\EqTag());
 
 //使用, 匿名类的order_id 属性必须在50-100区间，并且必须等于88
 $obj = new class {
