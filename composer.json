@@ -4,6 +4,8 @@
     "keywords": [
         "php",
         "swoole",
+        "workerman",
+        "framework",
         "zorro"
     ],
     "license": "Apache-2.0",
