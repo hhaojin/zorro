@@ -20,7 +20,10 @@ $zorror->Post("/test/{name}", function (\Zorro\Context $context) {
     $context->json(200, ["hello" => "world"]); //使用json响应
 });
 
-$zorror->Run(8080); //启动服务， 监听8080端口
+$zorror->Run(8080); //启动服务， 监听8080端口 
+
+//使用workerman启动 php main.php
+//使用swoole启动 php main.php ZORRO_SERVER=swoole
 ```
 
 ### 2、路由分组
@@ -34,7 +37,7 @@ $zorror->Use(new \Example\RecoveryMiddleware()); //全局中间件
 
 $orderGroup := $zorror->Group("/order"); //分组路由 
 {
-    //curl http://localhost:8080/order/detail?order_id=1
+    //curl http://localhost:8080/order/detail?order_id=100
     $orderGroup->Get("/detail", [\Example\Handler\Order::class, "detail"]); 
 }
 

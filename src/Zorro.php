@@ -28,7 +28,7 @@ class Zorro extends RouteGroup
 
     public function __construct()
     {
-        $adapter = $_SERVER["argv"][1];
+        $adapter = $_SERVER["argv"][1] ?? "";
         $arr = explode("=", $adapter);
         if (count($arr) === 2 && $arr[0] === "ZORRO_SERVER") {
             $this->adapter = $arr[1];

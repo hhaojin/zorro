@@ -2,8 +2,9 @@
 
 namespace Example\Handler;
 
-use example\CustomAttribute\TestLog;
+use Example\CustomAttribute\TestLog;
 use Zorro\Context;
+use Zorro\Inject;
 use Zorro\Validation\Validate;
 
 class OrderDeatilReq
@@ -14,13 +15,8 @@ class OrderDeatilReq
 
 class Order
 {
-    /** @var OrderProduct */
+    #[Inject(OrderProduct::class)]
     protected $orderProd;
-
-    public function __construct(OrderProduct $orderProd)
-    {
-        $this->orderProd = $orderProd;
-    }
 
     #[TestLog]
     public function detail(Context $context)

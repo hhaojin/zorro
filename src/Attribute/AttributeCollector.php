@@ -22,10 +22,11 @@ class AttributeCollector
         //处理属性注解
         $properties = $rf->getProperties();
         foreach ($properties as $property) {  //先递归处理属性类
+            PropertiesCollector::collect($property, $instance);
+
             $property->setAccessible(true);
             $propertyVal = $property->getValue($instance);
             if (is_object($propertyVal)) {
-                self::collectAttribute(new ReflectionClass($propertyVal), $propertyVal);
                 if (!is_null($propertyVal)) {
                     PropertiesCollector::collect($property, $propertyVal);
                     $property->setAccessible(true);
