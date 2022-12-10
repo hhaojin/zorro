@@ -22,7 +22,9 @@ class Adapter
 
     public static function Serve(Zorro $zorro): AdapterAbstract
     {
-        switch (self::parseServeType()) {
+        $opt = getopt("SERVER", ["SERVER:"]);
+        $type = $opt["SERVER"] ?? self::Workerman;
+        switch ($type) {
             case self::Workerman:
                 $server = new WorkerManAdapter($zorro);
                 return $server;
@@ -34,15 +36,4 @@ class Adapter
         }
     }
 
-    public static function parseServeType(): string
-    {
-        $adapter = $_SERVER["argv"][1] ?? "";
-        $arr = explode("=", $adapter);
-        if (count($arr) === 2 && $arr[0] === self::Server) {
-            $type = $arr[1];
-        } else {
-            $type = self::Workerman;
-        }
-        return $type;
-    }
 }

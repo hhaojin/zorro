@@ -46,6 +46,10 @@ class Zorro extends RouteGroup
 
     private function printHandles(array $handles)
     {
+        $release = getopt("release", ["release:"]);
+        if ($release) {
+            return;
+        }
         list($staticRoute, $variableRouteData) = $handles;
         foreach ($staticRoute as $method => $handle) {
             echo $method . "   -->   " . array_key_first($handle) . PHP_EOL;
