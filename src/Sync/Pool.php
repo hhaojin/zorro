@@ -10,9 +10,7 @@ namespace Zorro\Sync;
 
 class Pool
 {
-    /**
-     * @var \SplQueue
-     */
+    /** @var \SplQueue */
     protected $queue;
 
     /** @var \Closure */
@@ -20,41 +18,43 @@ class Pool
 
     protected $idleTime = 60;
 
-    public function __construct(\Closure $fn)
+    /** @var int */
+    protected $size;
+
+    public function __construct(\Closure $fn, $size = 50)
     {
         $this->queue = new \SplQueue();
         $this->new = $fn;
+        $this->size = $size;
     }
 
-    public function get(): \StdClass
+    public function get(): PoolElement
     {
         $now = time();
         if (!$this->queue->isEmpty()) {
+            /** @var PoolElement $ele */
             $ele = $this->queue->dequeue();
-            if (($now - $ele->t) > $this->idleTime && !$this->queue->isEmpty()) {
+            if (($now - $ele->lastUseTime) > $this->idleTime && !$this->queue->isEmpty()) {
                 return $this->queue->dequeue();
             }
             return $ele;
         }
-        return $this->gen();
+        $ctx = ($this->new)();
+        $n = new PoolElement($ctx);
+        return $n;
     }
 
-    public function put(\StdClass $ele)
+    public function put(PoolElement $ele)
     {
         $now = time();
-        if (($now - $ele->t) > $this->idleTime) {
+        if (($now - $ele->lastUseTime) > $this->idleTime) {
             return;
         }
-        $ele->t = $now;
+        if ($this->queue->count() >= $this->size) {
+            return;
+        }
+        $ele->lastUseTime = $now;
         $this->queue->enqueue($ele);
     }
 
-    protected function gen(): \StdClass
-    {
-        $ctx = ($this->new)();
-        $c = new \StdClass();
-        $c->val = $ctx;
-        $c->t = time();
-        return $c;
-    }
 }

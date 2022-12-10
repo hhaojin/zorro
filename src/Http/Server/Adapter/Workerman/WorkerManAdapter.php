@@ -47,6 +47,9 @@ class WorkerManAdapter extends AdapterAbstract
                 $rsp->connection = $connection;
 
                 $this->zorro->serveHttp($r, $rsp);
+
+                $requestPool->put($req);
+                $responsePool->put($resp);
             };
         }
         Worker::runAll();
