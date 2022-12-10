@@ -133,3 +133,29 @@ class OrderDeatilReq
 $req = $context->bindJson(OrderDeatilReq::class);
 var_dump($req);
 ```
+2、自定义规则
+```php
+class EqTag extends CustomTagAbstract
+{
+    protected $tag = "eq";
+
+    public function validate($input, $value): bool
+    {
+        var_dump($input,$value);
+        if ($input === $value) {
+            return true;
+        }
+        return false;
+    }
+}
+
+//使用, 匿名类的order_id 属性必须在50-100区间，并且必须等于88
+$obj = new class {
+    #[Validate("between=50,100;eq=88")]
+    public $order_id = 100;
+};
+
+\Zorro\Validation\Validator::validate($obj);
+// Zorro\Validation\ValidateException: invalid argument, property=order_id, 
+// tag=eq in D:\code\program\zorro\src\Validation\Validator.php:78
+```

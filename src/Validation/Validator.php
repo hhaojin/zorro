@@ -32,6 +32,8 @@ class Validator
 
     protected static $validator;
 
+    protected static $customRules = [];
+
     public static function create()
     {
         if (self::$validator === null) {
@@ -65,8 +67,13 @@ class Validator
         }
         foreach ($classRules as $propertyName => $rules) {
             foreach ($rules as $ruleName => $value) {
-                $ret = self::$respect->__call($ruleName, $value)
-                    ->validate($rf->getProperty($propertyName)->getValue($input));
+                $fieldValue = $rf->getProperty($propertyName)->getValue($input);
+                if (array_key_exists($ruleName, self::$customRules)) {
+                    $ret = self::$customRules[$ruleName]($fieldValue, ...$value);
+                } else {
+                    $ret = self::$respect->__call($ruleName, $value)
+                        ->validate($fieldValue);
+                }
                 if (!$ret) {
                     throw new ValidateException(
                         sprintf("invalid argument, property=%s, tag=%s", $propertyName, $ruleName));
@@ -93,4 +100,17 @@ class Validator
     {
         self::$ruleCache[$className][$propertyName] = $tags;
     }
+
+    public static function registerValidation(CustomTagAbstract $tag)
+    {
+        $rf = new \ReflectionClass($tag);
+        $property = $rf->getProperty("tag");
+        $property->setAccessible(true);
+        $tagName = $property->getValue($tag);
+        if (array_key_exists($tagName, self::$customRules)) {
+            throw new \Exception(sprintf("%s is already declared", $tagName));
+        }
+        self::$customRules[$tagName] = $rf->getMethod("validate")->getClosure($tag);
+    }
+
 }
