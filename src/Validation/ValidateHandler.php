@@ -26,10 +26,10 @@ class ValidateHandler implements CustomAttributeInterface
         /** @var $attrInstance Validate */
         $attrInstance = $attribute->newInstance();
         $rf = new \ReflectionClass($attrInstance);
-        $property = $rf->getProperty("tag");
-        $property->setAccessible(true);
-        $tag = $property->getValue($attrInstance);
-        $tags = explode(";", $tag);
+        $tag = $rf->getProperty("tag");
+        $tag->setAccessible(true);
+        $tagValue = $tag->getValue($attrInstance);
+        $tags = explode(";", $tagValue);
 
         $rules = [];
         foreach ($tags as $t) {
@@ -42,8 +42,14 @@ class ValidateHandler implements CustomAttributeInterface
         if (count($rules) === 0) {
             return;
         }
+
+        $msg = $rf->getProperty("msg");
+        $msg->setAccessible(true);
+        $notice = $msg->getValue($attrInstance);
+
         $className = get_class($instance);
         $propertyName = $reflect->getName();
-        Validator::addCache($className, $propertyName, $rules);
+
+        Validator::addCache($className, $propertyName, $rules, $notice);
     }
 }

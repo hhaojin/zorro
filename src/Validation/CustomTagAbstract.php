@@ -13,5 +13,7 @@ abstract class CustomTagAbstract
 {
     protected $tag = "";
 
+    protected $msg = "";
+
     abstract function validate($input, $value): bool;
 }

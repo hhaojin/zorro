@@ -18,8 +18,11 @@ class Validate
 {
     protected $tag;
 
-    public function __construct(string $tag)
+    protected $msg;
+
+    public function __construct(string $tag, string $msg = "")
     {
         $this->tag = $tag;
+        $this->msg = $msg;
     }
 }

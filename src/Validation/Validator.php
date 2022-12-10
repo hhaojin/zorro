@@ -66,17 +66,16 @@ class Validator
             return;
         }
         foreach ($classRules as $propertyName => $rules) {
-            foreach ($rules as $ruleName => $value) {
+            foreach ($rules[0] as $ruleName => $value) {
                 $fieldValue = $rf->getProperty($propertyName)->getValue($input);
                 if (array_key_exists($ruleName, self::$customRules)) {
                     $ret = self::$customRules[$ruleName]($fieldValue, ...$value);
                 } else {
-                    $ret = self::$respect->__call($ruleName, $value)
-                        ->validate($fieldValue);
+                    $ret = self::$respect->__call($ruleName, $value)->validate($fieldValue);
                 }
                 if (!$ret) {
-                    throw new ValidateException(
-                        sprintf("invalid argument, property=%s, tag=%s", $propertyName, $ruleName));
+                    $notice = $value[1] !== "" ? $rules[1] : sprintf("invalid argument, property=%s, tag=%s", $propertyName, $ruleName);
+                    throw new ValidateException($notice);
                 }
             }
         }
@@ -96,9 +95,9 @@ class Validator
         return null;
     }
 
-    public static function addCache(string $className, string $propertyName, array $tags)
+    public static function addCache(string $className, string $propertyName, array $tags, string $notice)
     {
-        self::$ruleCache[$className][$propertyName] = $tags;
+        self::$ruleCache[$className][$propertyName] = [$tags, $notice];
     }
 
     public static function registerValidation(CustomTagAbstract $tag)
@@ -110,7 +109,13 @@ class Validator
         if (array_key_exists($tagName, self::$customRules)) {
             throw new \Exception(sprintf("%s is already declared", $tagName));
         }
-        self::$customRules[$tagName] = $rf->getMethod("validate")->getClosure($tag);
+        if ($tagName === "") {
+            throw new \Exception(sprintf("must declare tag name"));
+        }
+        $property = $rf->getProperty("msg");
+        $property->setAccessible(true);
+        $msg = $property->getValue($tag);
+        self::$customRules[$tagName] = [$rf->getMethod("validate")->getClosure($tag), $msg];
     }
 
 }

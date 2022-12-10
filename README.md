@@ -138,6 +138,8 @@ var_dump($req);
 class EqTag extends Zorro\Validation\CustomTagAbstract
 {
     protected $tag = "eq";
+    
+    protected $msg = "";//自定义提示信息
 
     public function validate($input, $value): bool
     {
