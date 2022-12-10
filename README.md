@@ -23,7 +23,7 @@ $zorror->Post("/test/{name}", function (\Zorro\Context $context) {
 $zorror->Run(8080); //启动服务， 监听8080端口 
 
 //使用workerman启动 php main.php
-//使用swoole启动 php main.php ZORRO_SERVER=swoole
+//使用swoole启动 php main.php --SERVER=swoole
 ```
 
 ### 2、路由分组
